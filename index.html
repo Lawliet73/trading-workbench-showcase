@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trading Workbench Framework Map</title><link rel="icon" href="data:,">
+<style>
+:root{
+  --bg:#f7f7f4;--panel:#ffffff;--ink:#1d2327;--muted:#5b6670;--line:#dfe2e0;--accent:#2f5d8a;
+  --built:#1f7a4d;--built-bg:#e3f2e9;--planned:#2563a6;--planned-bg:#e2edf9;--proposed:#6b44a8;--proposed-bg:#efe8f8;
+  --candidate:#9a6200;--candidate-bg:#fbf0dc;--rejected:#7a7f85;--rejected-bg:#eceeef;--open:#b3261e;--open-bg:#fbe5e3;
+  --shadow:0 1px 2px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15181b;--panel:#1d2125;--ink:#e6e8ea;--muted:#9aa4ad;--line:#30363c;--accent:#7fb0e0;
+  --built:#5cc48d;--built-bg:#183a28;--planned:#79aef0;--planned-bg:#1a2e45;--proposed:#b393ea;--proposed-bg:#2c2240;
+  --candidate:#e5ad4e;--candidate-bg:#3a2d14;--rejected:#a3a9af;--rejected-bg:#2a2e32;--open:#f08a80;--open-bg:#43201d;--shadow:none}}
+:root[data-theme="dark"]{
+  --bg:#15181b;--panel:#1d2125;--ink:#e6e8ea;--muted:#9aa4ad;--line:#30363c;--accent:#7fb0e0;
+  --built:#5cc48d;--built-bg:#183a28;--planned:#79aef0;--planned-bg:#1a2e45;--proposed:#b393ea;--proposed-bg:#2c2240;
+  --candidate:#e5ad4e;--candidate-bg:#3a2d14;--rejected:#a3a9af;--rejected-bg:#2a2e32;--open:#f08a80;--open-bg:#43201d;--shadow:none}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--accent)}
+header{padding:20px 24px 0;max-width:1280px;margin:0 auto}
+h1{font-size:24px;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 14px;max-width:900px}
+nav{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line);max-width:1280px;margin:0 auto;padding:0 24px}
+nav button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 12px;font:inherit;color:var(--muted);cursor:pointer}
+nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+main{max-width:1280px;margin:0 auto;padding:20px 24px 60px}
+.tab{display:none}.tab.on{display:block}
+.pill{display:inline-block;border-radius:999px;padding:1px 9px;font-size:12px;font-weight:600;white-space:nowrap}
+.s-built{color:var(--built);background:var(--built-bg)}.s-planned{color:var(--planned);background:var(--planned-bg)}
+.s-proposed{color:var(--proposed);background:var(--proposed-bg)}.s-candidate{color:var(--candidate);background:var(--candidate-bg)}
+.s-rejected{color:var(--rejected);background:var(--rejected-bg);text-decoration:line-through}.s-open{color:var(--open);background:var(--open-bg)}
+.legend{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 14px}
+.legend .pill{cursor:help}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;box-shadow:var(--shadow)}
+.lanes{display:grid;gap:14px}
+.lane h2{font-size:16px;margin:0 0 2px}.lane p.l{color:var(--muted);margin:0 0 10px;font-size:14px}
+.flow{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap}
+.flow .q{flex:1 1 180px;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-width:170px}
+.flow .q:hover,.comp:hover{border-color:var(--accent)}
+.arrow{align-self:center;color:var(--muted);font-size:20px}
+.q .qid{font-size:12px;color:var(--muted);font-weight:600}.q .qt{font-weight:600;font-size:14px}
+.q .qa{font-size:13px;color:var(--muted)}
+.bar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--line)}
+.bar span{display:block}
+.gate{border:2px dashed var(--open);border-radius:10px;padding:10px 14px;text-align:center;font-weight:600;background:var(--open-bg);color:var(--open)}
+.loop{font-size:13px;color:var(--muted);margin-top:8px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.filters input,.filters select{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:3px 10px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}
+.chip[aria-pressed="false"]{opacity:.45}
+.group{margin:18px 0 6px}.group h3{margin:0;font-size:15px}.group p{margin:2px 0 8px;color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px}
+.comp{cursor:pointer;display:flex;flex-direction:column;gap:6px}
+.comp .top{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.kind{font-size:12px;color:var(--muted)}
+.comp .nm{font-weight:600;font-size:14px;line-height:1.3}.comp .pp{font-size:13px;color:var(--muted)}
+.drawer{position:fixed;top:0;right:0;height:100%;width:min(560px,100%);background:var(--panel);border-left:1px solid var(--line);
+  box-shadow:-6px 0 24px rgba(0,0,0,.15);transform:translateX(105%);transition:transform .2s;overflow:auto;z-index:20;padding:20px 22px 40px}
+.drawer.on{transform:none}
+.drawer h2{margin:6px 0 4px;font-size:19px}
+.drawer h4{margin:16px 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.drawer p{margin:0}
+.close{position:sticky;top:0;float:right;font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:4px 10px;cursor:pointer}
+.rel{display:flex;flex-wrap:wrap;gap:6px}.rel button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:2px 8px;cursor:pointer}
+.note{font-size:13px;color:var(--muted)}
+.views{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-bottom:12px}
+.views .card{cursor:pointer}.views .card[aria-current="true"]{border-color:var(--accent);outline:2px solid var(--accent)}
+iframe{width:100%;height:78vh;border:1px solid var(--line);border-radius:10px;background:#fff}
+.split{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:1000px){.split{grid-template-columns:1fr 1fr}}
+.list{display:flex;flex-direction:column;gap:8px}
+.item b{display:block}.item .why{color:var(--muted);font-size:13px}
+.assess{border:2px solid var(--proposed);border-radius:12px;padding:14px;background:var(--proposed-bg)}
+.assess h2{margin-top:0;color:var(--proposed)}
+.tag{font-size:12px;font-weight:600;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font-size:14px}th,td{border-bottom:1px solid var(--line);text-align:left;padding:6px 8px;vertical-align:top}
+.themebtn{float:right;font:inherit;font-size:13px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:4px 10px;cursor:pointer}
+@media(max-width:600px){header,main,nav{padding-left:16px;padding-right:16px}.arrow{display:none}}
+
+details.lesson,details.guide{border:1px solid var(--line);border-radius:8px;padding:12px;margin:14px 0;background:var(--bg)}
+summary{cursor:pointer;font-weight:600;line-height:1.5}summary:focus-visible,button:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.drawer p+p{margin-top:12px}.drawer p{line-height:1.65;overflow-wrap:anywhere}.drawer h3{font-size:16px;margin:18px 0 8px}.drawer h4{text-transform:none;font-size:14px;letter-spacing:0}
+.drawer:not(.on){visibility:hidden}.drawer.on{visibility:visible}.drawer{width:min(680px,100%)}
+.example-note{border-left:3px solid var(--accent);padding-left:10px;margin:12px 0}.guide p{max-width:90ch}
+dl{margin:8px 0}dt{font-weight:600;margin-top:12px}dd{margin:3px 0 12px;color:var(--muted)}
+.filters input,.filters select{max-width:100%;min-width:0}.grid,.split,.card{min-width:0}.comp,.item,td{overflow-wrap:anywhere}
+@media(max-width:600px){.drawer{padding:16px 18px 32px}.grid{grid-template-columns:1fr}table{font-size:13px}th,td{padding:6px 4px}.pill{white-space:normal}.filters input{width:100%}}
+@media(prefers-reduced-motion:reduce){.drawer{transition:none}}
+</style>
+</head>
+<body>
+<header>
+  <button class="themebtn" id="theme" type="button">Theme</button>
+  <h1>Trading Workbench framework map</h1>
+  <p class="sub" id="subtitle"></p>
+  <div class="legend" id="legend"></div>
+</header>
+<nav role="tablist" id="tabs">
+  <button role="tab" data-tab="overview">1 · Overview</button>
+  <button role="tab" data-tab="components">2 · Components</button>
+  <button role="tab" data-tab="views">3 · Diagrams</button>
+  <button role="tab" data-tab="decisions">4 · Open decisions &amp; gaps</button>
+  <button role="tab" data-tab="about">Legend &amp; sources</button>
+</nav>
+<main>
+  <section class="tab" id="tab-overview"></section>
+  <section class="tab" id="tab-components">
+    <div class="filters">
+      <input id="search" type="search" placeholder="Search components" aria-label="Search components">
+      <select id="kind" aria-label="Filter by kind"><option value="">All kinds</option></select>
+      <select id="life" aria-label="Filter by lifecycle"><option value="">All lifecycles</option></select>
+      <span id="chips"></span>
+      <span class="note" id="count" role="status" aria-live="polite"></span>
+    </div>
+    <div id="groups"></div>
+  </section>
+  <section class="tab" id="tab-views">
+    <p class="note">Each diagram is an Archify view built from the same data as this map. Open one here, or in its own tab for full-screen exploration (zoom, focus, routes). View A distinguishes component categories and status; view C labels the status of paths. View B shows planned steps and refusal gates; view D uses lifecycle shapes and status summaries. View E distinguishes proposal sources. Read the guide below before following a path. On a small screen, open a diagram in its own tab and use its zoom controls for dense labels.</p>
+    <div class="views" id="viewlist"></div>
+    <div id="viewguide" aria-live="polite"></div>
+    <iframe id="viewframe" title="Selected diagram"></iframe>
+  </section>
+  <section class="tab" id="tab-decisions"></section>
+  <section class="tab" id="tab-about"></section>
+</main>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="false" aria-label="Component details" aria-hidden="true"></aside>
+<script src="framework-data.js"></script>
+<script src="learning-data.js"></script>
+<script>
+(function(){
+const F = window.FW, $ = s => document.querySelector(s), esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const L = window.FW_LEARNING;
+const byId = Object.fromEntries(F.components.map(c => [c.id, c]));
+const qById = Object.fromEntries(F.questions.map(q => [q.id, q]));
+const order = ["built","planned","proposed","candidate","open","rejected"];
+const pill = s => `<span class="pill s-${s}" title="${esc(F.statuses[s].hint)}">${esc(F.statuses[s].label)}</span>`;
+const srcLink = k => { const s = F.src[k]; return !s ? "" : s[1] ? `<a href="${esc(s[1])}" target="_blank" rel="noopener">${esc(s[0])}</a>` : `<span>${esc(s[0])}</span>`; };
+const feedsInto = id => F.components.filter(c => c.deps.includes(id)).map(c => c.id);
+
+/* theme */
+const root = document.documentElement;
+try { const t = localStorage.getItem("fwmap-theme"); if (t) root.dataset.theme = t; } catch(e) {}
+$("#theme").onclick = () => { const cur = root.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  root.dataset.theme = cur === "dark" ? "light" : "dark"; try { localStorage.setItem("fwmap-theme", root.dataset.theme); } catch(e) {} };
+
+$("#subtitle").innerHTML = `<b>Public snapshot of a personal learning project</b> (quantitative trading research and software engineering). Not investment advice. A navigational layer above the project's private documents, compiled ${esc(F.asOf)} by ${esc(F.author)}. Status comes from repository evidence; <b>implemented is not validated</b>, and nothing here is owner-approved unless the decision record says so.`;
+$("#legend").innerHTML = order.map(pill).join("") + `<a class="note" href="#tab=about">Read status meanings and glossary</a>`;
+
+/* tabs + hash routing */
+function show(tab){ document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
+  document.querySelectorAll(".tab").forEach(s => s.classList.toggle("on", s.id === "tab-" + tab)); }
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => { location.hash = "tab=" + b.dataset.tab; });
+function route(){ const h = new URLSearchParams(location.hash.slice(1)); const tab = h.get("tab") || "overview";
+  show(["overview","components","views","decisions","about"].includes(tab) ? tab : "overview"); if (h.get("q")) { setQ(h.get("q")); } else if (tab === "components" && qFilter) { setQ(""); } if (h.get("c") && byId[h.get("c")]) open(h.get("c")); else { D.classList.remove("on"); D.setAttribute("aria-hidden","true"); } if (h.get("v")) pickView(h.get("v")); }
+addEventListener("hashchange", route);
+
+/* overview */
+function statusBar(list){ const n = list.length || 1; return `<div class="bar" aria-hidden="true">` + order.map(s => {
+  const k = list.filter(c => c.s === s).length; return k ? `<span class="s-${s}" style="width:${100*k/n}%;background:var(--${s})"></span>` : ""; }).join("") + `</div>`; }
+function qCard(q){ const list = F.components.filter(c => c.q === q.id);
+  const counts = order.map(s => [s, list.filter(c => c.s === s).length]).filter(x => x[1]).map(([s,k]) => `${k} ${F.statuses[s].label.toLowerCase()}`).join(" · ");
+  return `<div class="card q" tabindex="0" data-q="${q.id}"><span class="qid">${q.id} · ${esc(q.short)}</span><span class="qt">${esc(q.title)}</span>
+  <span class="qa">${esc(q.plain)}</span>${statusBar(list)}<span class="qa">${esc(counts)}</span><span class="qa"><b>Where it stands:</b> ${esc(q.answer)}</span></div>`; }
+function lane(id, qs, extra){ const L = F.lifecycles.find(l => l.id === id);
+  return `<div class="lane"><h2>${esc(L.label)}</h2><p class="l">${esc(L.text)}</p><details class="guide"><summary>Why this sequence exists</summary><p>${esc(window.FW_LEARNING.workflows[id])}</p></details><div class="flow">` +
+    qs.map(q => qCard(qById[q])).join('<span class="arrow" aria-hidden="true">→</span>') + `</div>${extra||""}</div>`; }
+$("#tab-overview").innerHTML = `<div class="lanes">
+  <p class="note">Level 1 · Start with the ten questions. Open a component for a plain-language explanation (Level 2), then expand its technical notes (Level 3). Research decides <b>what may trade</b>; operations decides <b>whether and how much to trade today</b>; the foundation serves both. Click a question to see its components.</p>
+  ${lane("research", ["Q3","Q4","Q5"])}
+  <div class="gate">Decision gate: only an owner-approved strategy version crosses into operations (planned; no version qualifies today)</div>
+  ${lane("operations", ["Q6","Q7","Q8","Q9","Q10"], `<p class="loop">↩ Feedback: Q10 sends findings back to Q3 as new hypotheses or challengers, never as filters on past trades (spec §8.2).</p>`)}
+  ${lane("foundation", ["Q1","Q2"])}
+  <div class="card"><b>Reading this map in 30 seconds.</b> Phases 0–2 (research tooling: data, backtests, validation) are implemented. The operational lifecycle (Q6–Q10) is planned for Phases 3–5 and not built. A large architecture proposal (R-001) and a strategy programme (R-002) are awaiting approval. Two operational questions have <b>no designed answer</b> yet: where scanning sits (Q6) and how strategies are selected at run time (Q7). See tab 4.</div>
+</div>`;
+document.querySelectorAll(".q").forEach(el => { const go = () => { location.hash = "tab=components&q=" + el.dataset.q; };
+  el.onclick = go; el.onkeydown = e => { if (e.key === "Enter") go(); }; });
+
+/* components */
+let active = new Set(order), qFilter = "";
+$("#kind").innerHTML += Object.entries(F.kinds).map(([k,v]) => `<option value="${k}">${esc(v)}</option>`).join("");
+$("#life").innerHTML += F.lifecycles.map(l => `<option value="${l.id}">${esc(l.label)}</option>`).join("");
+$("#chips").innerHTML = order.map(s => `<button class="chip s-${s}" aria-pressed="true" data-s="${s}">${esc(F.statuses[s].label)}</button>`).join(" ");
+document.querySelectorAll(".chip").forEach(b => b.onclick = () => { const s = b.dataset.s;
+  active.has(s) ? active.delete(s) : active.add(s); b.setAttribute("aria-pressed", active.has(s)); render(); });
+["#search","#kind","#life"].forEach(s => $(s).oninput = render);
+function setQ(q){ qFilter = q; render(); }
+function render(){ const term = $("#search").value.toLowerCase(), kind = $("#kind").value, life = $("#life").value;
+  let shown = 0;
+  $("#groups").innerHTML = (qFilter ? `<p class="note">Showing ${qFilter} only. <a href="#tab=components" id="clearq">Show all questions</a></p>` : "") +
+  F.questions.filter(q => !qFilter || q.id === qFilter).filter(q => !life || q.life === life).map(q => {
+    const list = F.components.filter(c => c.q === q.id && active.has(c.s) && (!kind || c.k === kind) &&
+      (!term || (c.id + " " + c.n + " " + c.p + " " + c.evid + " " + L.lessons[c.id] + " " + JSON.stringify(L.depth[c.id] || []) + " " + JSON.stringify(c.deep || {})).toLowerCase().includes(term)))
+      .sort((a,b) => order.indexOf(a.s) - order.indexOf(b.s));
+    shown += list.length; if (!list.length) return "";
+    return `<div class="group"><h3>${q.id} · ${esc(q.title)}</h3><p>${esc(q.answer)}</p><div class="grid">` +
+      list.map(c => `<div class="card comp" tabindex="0" data-c="${c.id}"><div class="top">${pill(c.s)}<span class="kind">${esc(F.kinds[c.k])}</span><span class="kind">· explanation${L.depth[c.id] || c.deep ? ' + technical notes' : ''}</span></div>
+      <span class="nm">${esc(c.n)}</span><span class="pp">${esc(c.p)}</span></div>`).join("") + `</div></div>`; }).join("");
+  $("#count").textContent = shown + " of " + F.components.length + " components" + (shown ? "" : " — no matches; clear search or enable more filters");
+  document.querySelectorAll(".comp").forEach(el => { const go = () => openHash(el.dataset.c); el.onclick = go; el.onkeydown = e => { if (e.key === "Enter") go(); }; });
+  const cq = $("#clearq"); if (cq) cq.onclick = () => { setQ(""); };
+}
+function openHash(id){ const h = new URLSearchParams(location.hash.slice(1)); h.set("c", id); location.hash = h.toString(); }
+
+/* Levels 2 and 3: preserve source detail, expand only on request. */
+const D = $("#drawer");
+let returnFocus = null;
+function open(id){ const c = byId[id]; if (!c) return; const d = c.deep || {};
+  if (!D.classList.contains("on")) returnFocus = document.activeElement;
+  const rel = ids => ids.length ? `<div class="rel">${ids.map(x => `<button data-c="${x}">${esc(byId[x].n)}</button>`).join("")}</div>` : `<p class="note">None recorded; this does not establish that no dependency exists.</p>`;
+  const sec = (t, v) => v ? `<h4>${t}</h4><p>${esc(v)}</p>` : "";
+  const down = [...new Set([...c.feeds, ...feedsInto(c.id)])];
+  const gaps = F.gaps.filter(g => g.rel.includes(c.id));
+  const deep = L.depth[id];
+  const terms = Object.entries(L.glossary).filter(([term]) => term.split(/ \(| \/ /).some(t => t.length > 2 && (c.n+" "+c.p+" "+L.lessons[id]+" "+JSON.stringify(deep||[])+" "+JSON.stringify(d)).toLowerCase().includes(t.toLowerCase())));
+  D.innerHTML = `<button class="close" id="dclose">Close ✕</button>
+    <div class="top">${pill(c.s)} <span class="kind">${esc(F.kinds[c.k])} · ${c.q} ${esc(qById[c.q].short)}</span></div>
+    <h2 id="detail-title">${esc(c.n)}</h2>
+    <p class="note">Level 2 · Understand the component</p>
+    <h3>Purpose and reasoning</h3><p>${esc(L.lessons[id])}</p>
+    <h3>Evidence and status</h3><p><b>${esc(F.statuses[c.s].label)}.</b> ${esc(F.statuses[c.s].hint)}</p><p>${esc(c.evid)}</p>
+    <h3>How it connects</h3>${d.integration ? `<p>${esc(d.integration)}</p>` : ""}
+    <p class="note">Needs information or capability from</p>${rel(c.deps)}<p class="note" style="margin-top:10px">Supplies or supports</p>${rel(down)}
+    <p class="note">These are the map's recorded dependencies, not new requirements or proof of implemented interfaces.</p>
+    ${deep || c.deep ? `<details class="lesson"><summary>Level 3 · Technical reasoning, examples and limitations</summary>
+    ${deep ? `<h3>${esc(deep[0])}</h3><p>${esc(deep[1])}</p><p class="note">Numerical examples are illustrative unless explicitly attributed to a recorded result.</p>` : ""}
+    ${sec("Intuition in the source", d.intuition)}${sec("Recorded mechanism", d.mechanism)}${sec("Inputs and outputs", d.io)}${sec("Contribution", d.value)}${sec("Limitations", d.limits)}${sec("Alternatives in the record", d.alt)}</details>` : ""}
+    ${terms.length ? `<details class="lesson"><summary>Terms used here (${terms.length})</summary><dl>${terms.map(([t,v])=>`<dt>${esc(t)}</dt><dd>${esc(v)}</dd>`).join("")}</dl></details>` : ""}
+    ${gaps.length ? `<h3>Related gaps (existing structural assessment)</h3>` + gaps.map(g => `<p><span class="tag">${g.id}</span> ${esc(g.t)}</p>`).join("") : ""}
+    <h3>Check the sources</h3><p>${c.src.map(srcLink).join(" · ")}</p>
+    <p class="note">The lesson explains the linked repository record; it does not add an approval or a measured result. <a href="#tab=about">Full glossary and source guide</a></p>`;
+  D.classList.add("on"); D.setAttribute("aria-hidden","false"); D.setAttribute("aria-labelledby","detail-title");
+  $("#dclose").onclick = closeD; D.querySelectorAll(".rel button").forEach(b => b.onclick = () => openHash(b.dataset.c)); D.scrollTop = 0; $("#dclose").focus({preventScroll:true}); }
+function closeD(){ D.classList.remove("on"); D.setAttribute("aria-hidden","true"); const h = new URLSearchParams(location.hash.slice(1)); h.delete("c"); history.replaceState(null,"","#"+h.toString()); if(returnFocus?.isConnected) returnFocus.focus({preventScroll:true}); }
+addEventListener("keydown", e => { if (e.key === "Escape" && D.classList.contains("on")) closeD(); });
+
+/* views */
+$("#viewlist").innerHTML = F.views.map(v => `<div class="card" tabindex="0" data-v="${v.id}"><b>${esc(v.t)}</b><p class="note">${esc(v.d)}</p>
+  <a href="${esc(v.file)}" target="_blank" rel="noopener">Open in a new tab ↗</a></div>`).join("");
+function pickView(id){ const v = F.views.find(x => x.id === id) || F.views[0]; $("#viewframe").src = v.file; $("#viewframe").title = v.t;
+  const guide = L.views[v.id]; $("#viewguide").innerHTML = `<div class="card guide"><h3>${esc(guide[0])}</h3><p>${esc(guide[1])}</p><p class="note">Explore the concepts: ${guide[2].map(id=>`<a href="#tab=views&v=${v.id}&c=${id}">${esc(byId[id].n)}</a>`).join(" · ")}</p></div>`;
+  document.querySelectorAll("#viewlist .card").forEach(c => c.setAttribute("aria-current", c.dataset.v === v.id)); }
+document.querySelectorAll("#viewlist .card").forEach(el => el.onclick = e => { if (e.target.tagName !== "A") location.hash = "tab=views&v=" + el.dataset.v; });
+document.querySelectorAll("#viewlist .card").forEach(el => el.onkeydown = e => { if(e.target === el && (e.key === "Enter" || e.key === " ")) {e.preventDefault(); location.hash = "tab=views&v=" + el.dataset.v;} });
+pickView("A");
+
+/* decisions and gaps */
+const relBtns = ids => ids.map(x => byId[x] ? `<button class="chip" data-c="${x}">${esc(byId[x].n)}</button>` : "").join(" ");
+$("#tab-decisions").innerHTML = `<div class="split">
+  <div><h2>Documented open decisions</h2><p class="note">These are open in the repository's own records. Resolving them is the owner's decision.</p>
+  <div class="list">${F.unresolved.map(u => `<div class="card item"><b>${u.id} · ${esc(u.t)}</b><span class="why">${esc(u.why)}</span>
+    ${u.src.length ? `<span class="note">${u.src.map(srcLink).join(" · ")}</span>` : ""}</div>`).join("")}</div></div>
+  <div class="assess"><h2>Claude's structural assessment (not part of the plan)</h2>
+  <p class="note">Written by Claude Opus 5.5 while building this map. These are findings and suggestions, kept apart from the documented framework. Nothing here is adopted.</p>
+  <h3>Gaps and inconsistencies</h3><div class="list">${F.gaps.map(g => `<div class="card item"><span class="tag">${g.id} · ${esc(g.type)}</span><b>${esc(g.t)}</b><span class="why">${esc(g.d)}</span><div>${relBtns(g.rel)}</div></div>`).join("")}</div>
+  <h3>Proposed improvements</h3><div class="list">${F.proposals.map(p => `<div class="card item"><span class="tag">${p.id} · addresses ${p.fix.join(", ")}</span><b>${esc(p.t)}</b><span class="why">${esc(p.d)}</span></div>`).join("")}</div>
+  <p class="note">The proposed structure is drawn in diagram E, which is labelled as a proposal.</p></div></div>`;
+document.querySelectorAll("#tab-decisions .chip").forEach(b => b.onclick = () => openHash(b.dataset.c));
+
+/* about */
+const counts = order.map(s => `<tr><td>${pill(s)}</td><td>${F.components.filter(c => c.s === s).length}</td><td>${esc(F.statuses[s].hint)}</td></tr>`).join("");
+const kindRows = Object.entries(F.kinds).map(([k,v]) => `<tr><td>${esc(v)}</td><td>${F.components.filter(c => c.k === k).length}</td></tr>`).join("");
+$("#tab-about").innerHTML = `<div class="split"><div class="card"><h2>Status legend</h2><table><tr><th>Status</th><th>Components</th><th>Meaning</th></tr>${counts}</table>
+  <p class="note" style="margin-top:8px">Implemented means code or a document exists; validated means a specified evidence test passed; approved means the owner granted authority. These are separate claims. A planned item belongs to the roadmap; a proposal changes or extends that plan and has not been accepted. A research candidate is worth investigating, not a selected trading strategy. The only implemented strategy (trend_cross) failed its deflated-Sharpe test, and no research candidate has been tested. "Proposed" items are R-001 architecture proposals; "Research candidate" items come from the idea registry and R-002.</p></div>
+  <div class="card"><h2>Component kinds</h2><table><tr><th>Kind</th><th>Count</th></tr>${kindRows}</table></div>
+  <div class="card"><h2>Authoritative sources</h2><p class="note">The map summarises these documents and never replaces them. When they disagree, the newer decision-log entry wins (spec §11.1).</p>
+  <ul>${["SPEC","LOG","AR","SR","REG","LOGP2","LOGR","PR1","PR2"].map(k => `<li>${srcLink(k)}</li>`).join("")}</ul>
+  <p class="note">The documents and code live in a private repository, so source references on this site are named but not linked. Statuses describe the dated evidence snapshot shown at the top of the page.</p></div>
+  <div class="card"><h2>About this public snapshot</h2><p>This is a manually published snapshot of the framework map from a personal learning project. It is not updated automatically; newer work may exist in the private repository.</p>
+  <p class="note">Nothing here is investment advice, and no strategy shown here has demonstrated profitability.</p>
+  <p class="note">Coverage: all 40 registry entries (E01–E17, M01–M09, V01–V14), the 10 R-001 decisions, the R-002 hypotheses, the spec's modules and the open decision-log items are mapped to at least one component.</p></div></div>`;
+
+$("#tab-about").innerHTML += `<div class="card" style="margin-top:16px"><h2>Glossary · read terms in context</h2><p class="note">Component panels also offer the matching terms. Educational expansion by ${esc(L.author)}; original structural assessment remains attributed to its author.</p><details class="guide"><summary>Open the glossary (${Object.keys(L.glossary).length} terms)</summary><dl>${Object.entries(L.glossary).map(([t,v])=>`<dt>${esc(t)}</dt><dd>${esc(v)}</dd>`).join("")}</dl></details><h3>Method references</h3><p class="note">Repository sources establish project status. These primary references support the statistical explanations.</p><ul>${L.references.map(([t,url])=>`<li><a href="${esc(url)}" target="_blank" rel="noopener">${esc(t)}</a></li>`).join("")}</ul></div>`;
+render(); route();
+})();
+</script>
+</body>
+</html>
