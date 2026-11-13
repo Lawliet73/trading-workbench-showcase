@@ -92,6 +92,7 @@ dl{margin:8px 0}dt{font-weight:600;margin-top:12px}dd{margin:3px 0 12px;color:va
 @media(max-width:600px){.drawer{padding:16px 18px 32px}.grid{grid-template-columns:1fr}table{font-size:13px}th,td{padding:6px 4px}.pill{white-space:normal}.filters input{width:100%}}
 @media(prefers-reduced-motion:reduce){.drawer{transition:none}}
 </style>
+<link rel="stylesheet" href="assistant.css">
 </head>
 <body>
 <header>
@@ -145,7 +146,7 @@ const feedsInto = id => F.components.filter(c => c.deps.includes(id)).map(c => c
 /* theme */
 const root = document.documentElement;
 try { const t = localStorage.getItem("fwmap-theme"); if (t) root.dataset.theme = t; } catch(e) {}
-$("#theme").onclick = () => { const cur = root.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+$("#theme").onclick = () => { const cur = root.dataset.theme || "dark";
   root.dataset.theme = cur === "dark" ? "light" : "dark"; try { localStorage.setItem("fwmap-theme", root.dataset.theme); } catch(e) {} };
 
 $("#subtitle").innerHTML = `<b>Public snapshot of a personal learning project</b> (quantitative trading research and software engineering). Not investment advice. A navigational layer above the project's private documents, compiled ${esc(F.asOf)} by ${esc(F.author)}. Status comes from repository evidence; <b>implemented is not validated</b>, and nothing here is owner-approved unless the decision record says so.`;
@@ -278,5 +279,7 @@ $("#tab-about").innerHTML += `<div class="card" style="margin-top:16px"><h2>Glos
 render(); route();
 })();
 </script>
+<script src="assistant-config.js"></script>
+<script src="assistant.js"></script>
 </body>
 </html>

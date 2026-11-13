@@ -56,3 +56,9 @@ Every component on the site has a status: Implemented, Planned, Proposed, Resear
 - It is a **snapshot** I publish by hand. It doesn't update with changes to the private project. The date of the evidence is shown at the top of the page.
 - Source references in the map name the private documents but don't link to them.
 - The diagrams were made with [Archify](https://github.com/tt-a1i/archify). The map's content was put together with AI assistance (Claude and Codex), from the project's own records.
+
+## Optional research companion
+
+The map includes a compact English/German chat panel with selected-component context, follow-up questions and source references. Cloud AI is **not enabled yet**; all static lessons and diagrams remain available.
+
+An opt-in workflow can synchronize explicitly approved public knowledge after commits. `assistant-knowledge.json` lists exact file revisions by SHA-256 (UTF-8 with LF line endings); changing content without updating its reviewed approval hash stops indexing. Unlisted files are excluded. Deployment and sync require owner setup and approval; no credentials are included here.
