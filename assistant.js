@@ -18,8 +18,8 @@
   const controls=el('div',{class:'ai-controls'});controls.append(send,clear);form.append(label,input,controls);
   const note=el('p',{class:'ai-note'},'AI explanations can be wrong. Check the sources. Questions are sent to Cloudflare; this chat stays in memory only.');
   panel.append(top,context,suggestions,messages,status,form,note);document.body.append(launcher,panel);
-  let history=[],controller,previousFocus;let component='';
-  function refresh(){component=new URLSearchParams(location.hash.slice(1)).get('c')||'';const c=window.FW?.components.find(c=>c.id===component);context.textContent=c?'Selected: '+c.n:'Explore the research framework';suggestions.replaceChildren();
+  let history=[],controller,previousFocus;let component='',diagram='';
+  function refresh(){const route=new URLSearchParams(location.hash.slice(1));diagram=route.get('tab')==='views'?(route.get('v')||'A'):'';component=new URLSearchParams(location.hash.slice(1)).get('c')||'';const c=window.FW?.components.find(c=>c.id===component);const view=window.FW?.views.find(v=>v.id===diagram);context.textContent=c?'Selected: '+c.n:view?'Diagram: '+view.t:'Explore the research framework';suggestions.replaceChildren();
     for(const prompt of language.value==='de'?['Erkläre das mit einem Zahlenbeispiel.','Was ist implementiert, und was ist noch eine Hypothese?']:['Explain this with a numerical example.','What is implemented, and what remains a hypothesis?']){const b=el('button',{type:'button'},prompt);b.onclick=()=>{input.value=prompt;input.focus();};suggestions.append(b);}
     const drawer=document.querySelector('#drawer');if(c&&drawer&&!drawer.querySelector('.ai-explain')){const b=el('button',{type:'button',class:'ai-explain'},'Explain this · AI');b.onclick=()=>{open();input.value=language.value==='de'?'Erkläre diese Komponente und ihre Beziehungen.':'Explain this component and its relationships.';};drawer.querySelector('h2')?.after(b);}
   }
@@ -35,12 +35,12 @@
   form.onsubmit=async e=>{e.preventDefault();if(send.disabled)return;refresh();if(!config.endpoint){status.textContent='Cloud assistant is awaiting setup.';return;}const question=input.value.trim();if(!question)return;
     const localController=new AbortController();controller=localController;const timer=setTimeout(()=>localController.abort(),45000);
     const requestHistory=history.slice(-4);bubble('user',question);input.value='';send.disabled=true;status.textContent=language.value==='de'?'Quellen werden geprüft …':'Checking sources …';
-    try{const r=await fetch(config.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},credentials:config.private?'same-origin':'omit',signal:localController.signal,body:JSON.stringify({question,history:requestHistory,component,language:language.value})});
+    try{const r=await fetch(config.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},credentials:config.private?'same-origin':'omit',signal:localController.signal,body:JSON.stringify({question,history:requestHistory,component,diagram,language:language.value})});
       let data;try{data=await r.json();}catch{throw Error('Assistant unavailable. Check your connection or sign in to the private site.');}if(!r.ok)throw Error(data.error||'Assistant unavailable.');if(controller!==localController||localController.signal.aborted)return;
       const n=bubble('assistant',data.answer);const refs=el('div',{class:'ai-sources'});
       for(const s of data.sources||[]){const text=`[${s.number}] ${s.title}`;if(typeof s.url==='string'&&(s.url.startsWith('#tab=')||s.url.startsWith('https://'))){const a=el('a',{href:s.url},text);if(s.url.startsWith('https://')){a.target='_blank';a.rel='noopener noreferrer';}refs.append(a);}else refs.append(el('span',{},text));}
       n.append(refs);history=[...requestHistory,{role:'user',content:question},{role:'assistant',content:data.answer.slice(0,2000)}];status.textContent='';
     }catch(error){if(controller===localController)status.textContent=error.name==='AbortError'?'Request stopped. Please try again.':error.message;}
     finally{clearTimeout(timer);if(controller===localController){send.disabled=false;controller=null;}}
-  };refresh();
+  };const viewGuide=document.querySelector('#viewguide');if(viewGuide){const b=el('button',{type:'button',class:'ai-explain'},'Explain diagram · AI');b.onclick=()=>{open();input.value=language.value==='de'?'Erkläre dieses Diagramm und seine Beziehungen.':'Explain this diagram and its relationships.';};viewGuide.before(b);}refresh();
 })();

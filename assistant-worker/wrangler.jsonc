@@ -1,0 +1,26 @@
+{
+  "name": "workbench-assistant-public",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": {
+    "enabled": false
+  },
+  "ai": {
+    "binding": "AI"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "workbench-public",
+      "database_id": "f6a83f9a-41eb-4290-a260-a9aabd25af7e"
+    }
+  ],
+  "vars": {
+    "SCOPE": "public",
+    "SITE_ORIGIN": "https://lawliet73.github.io",
+    "ENABLED": "false",
+    "FREE_PLAN_CONFIRMED": "true"
+  }
+}

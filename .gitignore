@@ -1,0 +1,5 @@
+
+knowledge.json
+_site/
+.wrangler/
+assistant-worker/.wrangler/

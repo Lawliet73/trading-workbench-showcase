@@ -57,8 +57,12 @@ Every component on the site has a status: Implemented, Planned, Proposed, Resear
 - Source references in the map name the private documents but don't link to them.
 - The diagrams were made with [Archify](https://github.com/tt-a1i/archify). The map's content was put together with AI assistance (Claude and Codex), from the project's own records.
 
-## Optional research companion
+## Research companion
 
-The map includes a compact English/German chat panel with selected-component context, follow-up questions and source references. Cloud AI is **not enabled yet**; all static lessons and diagrams remain available.
+The public English/German tutor explains this website's components, diagrams, relationships and quantitative research concepts. Project-specific claims come only from published site content; general explanations are labelled separately. No private repository access is available.
 
-An opt-in workflow can synchronize explicitly approved public knowledge after commits. `assistant-knowledge.json` lists exact file revisions by SHA-256 (UTF-8 with LF line endings); changing content without updating its reviewed approval hash stops indexing. Unlisted files are excluded. Deployment and sync require owner setup and approval; no credentials are included here.
+Every Pages build generates `knowledge.json` from the site's existing component data, lessons, glossary, diagram labels and guides. The Worker retrieves that public file directly with a 60-second cache. There is no separate knowledge database, sync credential or per-finding approval list. New educational content becomes available after its normal website deployment and cache refresh.
+
+Cloudflare Workers AI uses Llama 3.1 8B FP8 Fast. Existing D1 is used only for atomic daily usage limits (60 total / 10 per client). Keep the account on Workers Free; no paid fallback is configured. Answers may be wrong; check the linked website sources. Model instructions redirect unrelated topics but are not an absolute topic-security boundary.
+
+To preview the derived content: `node scripts/build-knowledge.mjs .`. The generated file is deployed with the site, not maintained by hand. To deploy the Worker: `npx wrangler deploy --config assistant-worker/wrangler.jsonc`. Credentials stay in Wrangler's credential store, never in site files. Disable inference by setting `ENABLED` to `false` in that configuration and redeploying.
