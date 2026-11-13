@@ -20,7 +20,7 @@
   "vars": {
     "SCOPE": "public",
     "SITE_ORIGIN": "https://lawliet73.github.io",
-    "ENABLED": "false",
+    "ENABLED": "true",
     "FREE_PLAN_CONFIRMED": "true"
   }
 }
