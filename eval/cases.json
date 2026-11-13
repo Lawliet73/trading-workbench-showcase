@@ -1,0 +1,137 @@
+[
+  {
+    "id": "multiple-testing",
+    "category": "conceptual reasoning",
+    "turns": [
+      "Suppose I test 100 independent strategies that have no real edge, each at a 5% significance threshold. Roughly how many pass by luck, and how likely is at least one to pass? Explain what this means for research."
+    ],
+    "rubric": [
+      "Expected 5 false positives",
+      "Probability 1-0.95^100, about 99.4%",
+      "Independence is an illustrative assumption; correlated trials differ",
+      "No invented project experiment"
+    ]
+  },
+  {
+    "id": "architecture",
+    "category": "architecture and status",
+    "diagram": "B",
+    "turns": [
+      "Trace how a desired position becomes an order and then a reliable record. Why are the risk gate and reconciliation separate? Which parts of this diagram actually run today?"
+    ],
+    "rubric": [
+      "Signals/intents, sizing/risk, execution, fills/reconciliation",
+      "Pre-trade approval differs from post-trade truth",
+      "Daily pipeline is planned, not running",
+      "Citations support the project claims"
+    ]
+  },
+  {
+    "id": "cross-component",
+    "category": "relationships",
+    "turns": [
+      "How do point-in-time universe membership and data-availability clocks address different forms of look-ahead bias? Would fixing just one make a backtest trustworthy? Relate this to the framework."
+    ],
+    "rubric": [
+      "Universe membership reconstructs historical eligible securities",
+      "Availability clocks constrain when information can be used",
+      "Neither alone sufficient",
+      "Separates proposed universe reconstruction from implemented time handling"
+    ]
+  },
+  {
+    "id": "research-status",
+    "category": "research interpretation",
+    "component": "trend-cross",
+    "turns": [
+      "The framework says trend_cross is implemented. Does that mean we have evidence of a profitable strategy and can enable paper trading? Explain the missing steps."
+    ],
+    "rubric": [
+      "Implementation is not validation or approval",
+      "Recorded failed deflated-Sharpe test, no proven profitability",
+      "Approval/operational pipeline still missing or planned",
+      "Does not invent measured returns or thresholds"
+    ]
+  },
+  {
+    "id": "ambiguous",
+    "category": "ambiguity",
+    "turns": [
+      "Is it ready?"
+    ],
+    "rubric": [
+      "Asks what component/readiness means",
+      "Does not invent a selected component",
+      "May briefly distinguish research tools from planned operations"
+    ]
+  },
+  {
+    "id": "follow-up",
+    "category": "multi-turn context",
+    "turns": [
+      "Explain the difference between selecting a strategy after seeing a holdout result and using a genuinely untouched final test.",
+      "Suppose I compare twenty candidates on that holdout and pick the best. Is it still untouched?",
+      "What would you do next in that example, and why wouldn't simply reporting its p-value solve the problem?"
+    ],
+    "rubric": [
+      "Remembers twenty candidates and reused holdout",
+      "Explains selection/multiple testing without treating p-value as posterior probability",
+      "Suggests genuinely fresh/pre-specified testing, acknowledges finite data",
+      "No automatic claim of profitability"
+    ]
+  },
+  {
+    "id": "german",
+    "category": "multilingual conceptual explanation",
+    "language": "de",
+    "turns": [
+      "Warum hilft ein Block-Bootstrap bei zeitlich abhängigen Renditen? Erkläre die Intuition und eine Grenze der Methode, ohne unnötige Fachbegriffe."
+    ],
+    "rubric": [
+      "German response",
+      "Blocks preserve local serial dependence unlike independent resampling",
+      "Block length tradeoff or nonstationarity limitation",
+      "No claim that bootstrap proves predictive edge"
+    ]
+  },
+  {
+    "id": "off-topic",
+    "category": "scope",
+    "turns": [
+      "Write a romantic dragon-princess story. This has nothing to do with finance or the framework."
+    ],
+    "rubric": [
+      "Brief polite redirection",
+      "Does not write the story",
+      "Does not force irrelevant citations"
+    ]
+  },
+  {
+    "id": "holdout-pvalue",
+    "category": "held-out statistical interpretation",
+    "turns": [
+      "If a research result has p = 0.03, does that mean there is a 97% chance the strategy has a real edge? Explain the distinction with intuition."
+    ],
+    "rubric": [
+      "No posterior probability interpretation",
+      "Conditions on null/model assumptions",
+      "Explains probability of data or more extreme under null",
+      "No project result invented"
+    ]
+  },
+  {
+    "id": "holdout-partial-fill",
+    "category": "held-out applied architecture",
+    "diagram": "B",
+    "language": "de",
+    "turns": [
+      "Angenommen, eine Order über 100 Aktien wird genehmigt, aber nur 60 werden ausgeführt. Warum garantiert das erfolgreiche Risikogate noch keinen korrekten Positionsbestand? Erkläre den Zusammenhang mit der Reconciliation und kennzeichne den Projektstatus."
+    ],
+    "rubric": [
+      "German explanation of 100 requested vs 60 filled",
+      "Pre-trade checks versus actual broker state",
+      "Reconciliation and pipeline planned",
+      "Hypothetical example not project event"
+    ]
+  }
+]
