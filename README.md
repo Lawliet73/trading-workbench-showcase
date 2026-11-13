@@ -1,4 +1,4 @@
-# Trading Workbench – framework map
+# Trading Workbench â€“ framework map
 
 **Live site:** https://lawliet73.github.io/trading-workbench-showcase/
 
@@ -27,7 +27,7 @@ I wanted to learn how systematic trading research is done by building the tools 
 The map groups about 120 components under ten questions in three parts:
 
 - **Foundation:** scope, market data, records and infrastructure.
-- **Research lifecycle:** ideas → backtests → validation evidence → a decision about paper trading.
+- **Research lifecycle:** ideas â†’ backtests â†’ validation evidence â†’ a decision about paper trading.
 - **Operational lifecycle:** the daily path from approved strategies through a risk gate to paper orders, reconciliation and monitoring.
 
 Five diagrams show the system from different angles: functional architecture, the daily decision workflow, information flow, the research lifecycle, and a proposed structure.
@@ -63,6 +63,6 @@ The public English/German tutor explains this website's components, diagrams, re
 
 Every Pages build generates `knowledge.json` from the site's existing component data, lessons, glossary, diagram labels and guides. The Worker retrieves that public file directly with a 60-second cache. There is no separate knowledge database, sync credential or per-finding approval list. New educational content becomes available after its normal website deployment and cache refresh.
 
-Cloudflare Workers AI uses Llama 3.1 8B FP8 Fast. Existing D1 is used only for atomic daily usage limits (60 total / 10 per client). Keep the account on Workers Free; no paid fallback is configured. Answers may be wrong; check the linked website sources. Model instructions redirect unrelated topics but are not an absolute topic-security boundary.
+Cloudflare Workers AI uses Llama 3.1 8B FP8 Fast. Existing D1 is used only for atomic daily usage limits (60 total / 10 per client). Keep the account on Workers Free; no paid fallback is configured. Answers may be wrong; check the linked website sources. A brief model scope check redirects unrelated topics but are not an absolute topic-security boundary.
 
 To preview the derived content: `node scripts/build-knowledge.mjs .`. The generated file is deployed with the site, not maintained by hand. To deploy the Worker: `npx wrangler deploy --config assistant-worker/wrangler.jsonc`. Credentials stay in Wrangler's credential store, never in site files. Disable inference by setting `ENABLED` to `false` in that configuration and redeploying.
