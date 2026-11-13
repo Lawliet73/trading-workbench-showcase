@@ -25,7 +25,7 @@ jobs:
       - run: node scripts/build-knowledge.mjs .
       - run: |
           mkdir _site
-          cp index.html framework-data.js learning-data.js assistant.js assistant.css assistant-config.js knowledge.json .nojekyll _site/
+          cp index.html framework-data.js learning-data.js assistant.js assistant.css assistant-config.js dashboard.css dashboard.js diagram-theme.css knowledge.json .nojekyll _site/
           cp -r views _site/views
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
