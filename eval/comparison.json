@@ -1,0 +1,1258 @@
+{
+  "baselineCommit": "8c45f5b",
+  "assessment": "Small manual paired evaluation, not a statistical benchmark. Outputs are synthetic test conversations using public website content only.",
+  "comparisons": [
+    {
+      "case": "multiple-testing",
+      "turn": 0,
+      "question": "Suppose I test 100 independent strategies that have no real edge, each at a 5% significance threshold. Roughly how many pass by luck, and how likely is at least one to pass? Explain what this means for research.",
+      "rubric": [
+        "Expected 5 false positives",
+        "Probability 1-0.95^100, about 99.4%",
+        "Independence is an illustrative assumption; correlated trials differ",
+        "No invented project experiment"
+      ],
+      "baseline": {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+        "signature": "968ac4a9e982",
+        "knowledgeVersion": "3a72ec52c245618c",
+        "status": 200,
+        "answer": "**Visitor Question**\n\nYou've tested 100 independent strategies with no real edge, each at a 5% significance threshold. How many pass by luck, and how likely is at least one to pass?\n\n**Website Evidence**\n\nThe website does not provide direct evidence for this specific question. However, it mentions walk-forward testing (Source [2]) and backtester self-tests (Source [5]), which are relevant to evaluating strategy performance.\n\n**General Explanation**\n\nTo estimate the number of strategies passing by luck, we'll use a simple one-period example. Assume a 5% significance threshold, meaning 5% of strategies are expected to pass by chance.\n\nFor 100 strategies, the expected number of false positives (passing by luck) is:\n100 x 0.05 = 5\n\nThe probability that at least one strategy passes by luck is:\n1 - (probability of no strategies passing) = 1 - (0.95)^100 ≈ 0.99\n\nThis means that, by chance alone, it's likely that at least one strategy will pass the 5% significance threshold.\n\n**Interpretation**\n\nThis highlights the importance of proper testing and validation in research. Even with no real edge, a large number of strategies can appear to perform well by chance. This emphasizes the need for robust testing and verification procedures to ensure that results are not due to luck.",
+        "sources": [
+          {
+            "number": 1,
+            "title": "Several strategies on one symbol (per-strategy ledger)",
+            "url": "#tab=components&c=multi-strat"
+          },
+          {
+            "number": 2,
+            "title": "Walk-forward (4-year train, 1-year test, flat start)",
+            "url": "#tab=components&c=walk-forward"
+          },
+          {
+            "number": 3,
+            "title": "Honest test (exact re-run, look-ahead tests)",
+            "url": "#tab=components&c=honest-test"
+          },
+          {
+            "number": 4,
+            "title": "Walk-forward (4-year train, 1-year test, flat start) — technical explanation",
+            "url": "#tab=components&c=walk-forward"
+          },
+          {
+            "number": 5,
+            "title": "Backtester self-tests (planted edge, noise, traps)",
+            "url": "#tab=components&c=self-tests"
+          },
+          {
+            "number": 6,
+            "title": "One policy function for sizing everywhere",
+            "url": "#tab=components&c=policy-fn"
+          },
+          {
+            "number": 7,
+            "title": "Real-money trading",
+            "url": "#tab=components&c=live-money"
+          }
+        ],
+        "milliseconds": 2217,
+        "usage": [
+          {
+            "prompt_tokens": 166,
+            "completion_tokens": 2,
+            "total_tokens": 168,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 0.7534169554710388
+          },
+          {
+            "prompt_tokens": 1534,
+            "completion_tokens": 279,
+            "total_tokens": 1813,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 16.045997619628906
+          }
+        ],
+        "truncated": null
+      },
+      "improved": {
+        "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "signature": "bae430a680dc",
+        "knowledgeVersion": null,
+        "status": 200,
+        "answer": "If 100 independent strategies with no real edge are tested at a 5% significance threshold, we can expect about 5 to pass by luck. This is because the 5% threshold means that 5% of the time, a strategy with no real edge will be deemed statistically significant, which translates to approximately 5 out of 100 strategies.\n\nThe likelihood of at least one strategy passing by luck is very high, specifically 1 minus the probability that none pass, which is (1 - 0.05)^100, or about 1 - 0.006, which is roughly 0.994, or 99.4%. This means it's almost certain that at least one strategy will pass by luck.\n\nThis has significant implications for research, as it highlights the problem of false positives. When testing multiple strategies, it's essential to account for this issue, for example by using techniques such as the Bonferroni correction or controlling the false discovery rate. Otherwise, researchers may mistakenly attribute the success of a strategy to a real edge when it's simply due to luck.",
+        "sources": [],
+        "milliseconds": 18406,
+        "usage": [
+          {
+            "prompt_tokens": 269,
+            "completion_tokens": 23,
+            "total_tokens": 292,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 11.884125709533691
+          },
+          {
+            "prompt_tokens": 387,
+            "completion_tokens": 221,
+            "total_tokens": 608,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 55.582366943359375
+          }
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case": "architecture",
+      "turn": 0,
+      "question": "Trace how a desired position becomes an order and then a reliable record. Why are the risk gate and reconciliation separate? Which parts of this diagram actually run today?",
+      "rubric": [
+        "Signals/intents, sizing/risk, execution, fills/reconciliation",
+        "Pre-trade approval differs from post-trade truth",
+        "Daily pipeline is planned, not running",
+        "Citations support the project claims"
+      ],
+      "baseline": {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+        "signature": "968ac4a9e982",
+        "knowledgeVersion": "3a72ec52c245618c",
+        "status": 200,
+        "answer": "**Visitor Question:**\n\n\"Trace how a desired position becomes an order and then a reliable record. Why are the risk gate and reconciliation separate? Which parts of this diagram actually run today?\"\n\n**Website Evidence:**\n\nAccording to the project documentation, the process is as follows:\n\n1. A desired position is computed by a strategy version [3].\n2. The risk gate evaluates the proposed trade against authority, data quality, and account constraints [5].\n3. If the trade is approved, the system sends an order to the broker [5].\n4. The order is reconciled with the actual fill, and the resulting record is stored [1].\n\n**General Explanation:**\n\nThe risk gate and reconciliation are separate because they serve different purposes. The risk gate ensures that the trade is executed safely and within the account's constraints, while reconciliation ensures that the actual fill matches the intended trade.\n\n**Running Components:**\n\nAccording to the documentation, the following components are not running today:\n\n* Risk gate [5]\n* Reconciliation [1]\n* Scanner or universe component [7]\n* Event detection [7]\n\nThe strategy version computation and order sending are not explicitly stated as running or not running.",
+        "sources": [
+          {
+            "number": 1,
+            "title": "B · Daily decision workflow and gates",
+            "url": "#tab=views&v=B"
+          },
+          {
+            "number": 2,
+            "title": "Risk gate (authority, inputs, stop, size, exposure, shorts, breakers, blackout) — technical explanation",
+            "url": "#tab=components&c=risk-gate"
+          },
+          {
+            "number": 3,
+            "title": "Which strategy versions are allowed to trade on paper?",
+            "url": "#tab=components&q=Q5"
+          },
+          {
+            "number": 4,
+            "title": "Replay parity (history through the real gate and order code)",
+            "url": "#tab=components&c=replay"
+          },
+          {
+            "number": 5,
+            "title": "Risk gate (authority, inputs, stop, size, exposure, shorts, breakers, blackout)",
+            "url": "#tab=components&c=risk-gate"
+          },
+          {
+            "number": 6,
+            "title": "Replay parity (history through the real gate and order code) — technical explanation",
+            "url": "#tab=components&c=replay"
+          },
+          {
+            "number": 7,
+            "title": "Where do we look today: which instruments and events?",
+            "url": "#tab=components&q=Q6"
+          }
+        ],
+        "milliseconds": 2201,
+        "usage": [
+          {
+            "prompt_tokens": 155,
+            "completion_tokens": 2,
+            "total_tokens": 157,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 0.7081127762794495
+          },
+          {
+            "prompt_tokens": 1713,
+            "completion_tokens": 239,
+            "total_tokens": 1952,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 15.388507843017578
+          }
+        ],
+        "truncated": null
+      },
+      "improved": {
+        "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "signature": "bae430a680dc",
+        "knowledgeVersion": "242af2fb137deb5b",
+        "status": 200,
+        "answer": "According to the passages, a desired position becomes an order through the daily decision workflow and gates [2]. The process starts with refreshing prices, then computing signals, and selecting a strategy. The risk gate checks the proposed trade against authority, data quality, and account constraints before sending an order. If the order is approved, it is sent to the broker through the Alpaca paper adapter [6]. \n\nThe risk gate and reconciliation are separate because they serve different purposes. The risk gate decides whether to trade and how much, based on the current state of the account and market [3]. Reconciliation, on the other hand, ensures that the internal records match the broker's records, and explains any differences [4]. \n\nAs for which parts of the diagram actually run today, the answer is none. The daily trading pipeline and scheduler [5], risk gate [3], and reconciliation [4] are all planned for Phase 3, which means they have not been implemented yet. The project is currently in the research and development lifecycle, where ideas are turned into strategy versions, but these versions are not yet being executed in a live trading environment.",
+        "sources": [
+          {
+            "number": 2,
+            "title": "B · Daily decision workflow and gates",
+            "url": "#tab=views&v=B"
+          },
+          {
+            "number": 3,
+            "title": "Risk gate (authority, inputs, stop, size, exposure, shorts, breakers, blackout)",
+            "url": "#tab=components&c=risk-gate"
+          },
+          {
+            "number": 4,
+            "title": "Reconciliation with attribution",
+            "url": "#tab=components&c=reconcile"
+          },
+          {
+            "number": 5,
+            "title": "Daily trading pipeline and scheduler",
+            "url": "#tab=components&c=pipeline"
+          },
+          {
+            "number": 6,
+            "title": "Alpaca paper adapter (OPG/LOO, GTC stops, client order IDs)",
+            "url": "#tab=components&c=alpaca-exec"
+          }
+        ],
+        "milliseconds": 26488,
+        "usage": [
+          {
+            "prompt_tokens": 256,
+            "completion_tokens": 31,
+            "total_tokens": 287,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 13.175888061523438
+          },
+          {
+            "prompt_tokens": 2947,
+            "completion_tokens": 231,
+            "total_tokens": 3178,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 125.899658203125
+          }
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case": "cross-component",
+      "turn": 0,
+      "question": "How do point-in-time universe membership and data-availability clocks address different forms of look-ahead bias? Would fixing just one make a backtest trustworthy? Relate this to the framework.",
+      "rubric": [
+        "Universe membership reconstructs historical eligible securities",
+        "Availability clocks constrain when information can be used",
+        "Neither alone sufficient",
+        "Separates proposed universe reconstruction from implemented time handling"
+      ],
+      "baseline": {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+        "signature": "968ac4a9e982",
+        "knowledgeVersion": "3a72ec52c245618c",
+        "status": 200,
+        "answer": "**Visitor Question**\n\n\"How do point-in-time universe membership and data-availability clocks address different forms of look-ahead bias? Would fixing just one make a backtest trustworthy?\"\n\n**Website Evidence**\n\nAccording to the website, point-in-time universe membership and data-availability clocks address different forms of look-ahead bias by separating the time a market event happened from when the system knew it and when it could act [1]. The four clocks (bar end, data availability, decision, and execution) prevent look-ahead bias by ensuring that a bar is not used before it is delivered [2].\n\n**General Explanation**\n\nPoint-in-time universe membership ensures that a stock is included in the universe at the correct point in time, whereas data-availability clocks ensure that the system does not use data before it is available. Fixing just one of these issues may not make a backtest trustworthy, as look-ahead bias can still occur through other means. For example, if the system uses data that is available but not yet delivered, it can still be considered a form of look-ahead bias. Therefore, both issues need to be addressed to ensure a trustworthy backtest.",
+        "sources": [
+          {
+            "number": 1,
+            "title": "Four clocks and availability times",
+            "url": "#tab=components&c=four-clocks"
+          },
+          {
+            "number": 2,
+            "title": "Four clocks and availability times — technical explanation",
+            "url": "#tab=components&c=four-clocks"
+          },
+          {
+            "number": 3,
+            "title": "Honest test (exact re-run, look-ahead tests)",
+            "url": "#tab=components&c=honest-test"
+          },
+          {
+            "number": 4,
+            "title": "Look-ahead bias",
+            "url": "#tab=about"
+          },
+          {
+            "number": 5,
+            "title": "Reproducible dataset versions (raw + adjusted, fingerprints)",
+            "url": "#tab=components&c=data-versions"
+          },
+          {
+            "number": 6,
+            "title": "Locked holdout (one look per family)",
+            "url": "#tab=components&c=holdout"
+          },
+          {
+            "number": 7,
+            "title": "Reproducible dataset versions (raw + adjusted, fingerprints) — technical explanation",
+            "url": "#tab=components&c=data-versions"
+          }
+        ],
+        "milliseconds": 1763,
+        "usage": [
+          {
+            "prompt_tokens": 155,
+            "completion_tokens": 2,
+            "total_tokens": 157,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 0.7081127762794495
+          },
+          {
+            "prompt_tokens": 1366,
+            "completion_tokens": 229,
+            "total_tokens": 1595,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 13.610688209533691
+          }
+        ],
+        "truncated": null
+      },
+      "improved": {
+        "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "signature": "bae430a680dc",
+        "knowledgeVersion": "242af2fb137deb5b",
+        "status": 200,
+        "answer": "Point-in-time universe membership, as proposed in the universe tiers U0 / U1 / U2 [2], addresses look-ahead bias by ensuring that a strategy only considers instruments that were actually available and eligible for trading at a given historical date. This prevents the strategy from using information about companies that had already failed or been delisted, which would not have been available to a trader at that time.\n\nOn the other hand, data-availability clocks, as implemented in the four clocks and availability times [4], address look-ahead bias by ensuring that a strategy only uses data that was actually available at the time a trading decision was made. This prevents the strategy from using future data, such as prices or events that had not yet occurred, to inform its decisions.\n\nFixing just one of these issues would not make a backtest trustworthy. Both point-in-time universe membership and data-availability clocks are necessary to prevent different forms of look-ahead bias. If a strategy uses point-in-time universe membership but ignores data-availability clocks, it may still use future data to inform its decisions. Conversely, if a strategy uses data-availability clocks but ignores point-in-time universe membership, it may still consider instruments that were not actually available for trading at a given historical date.\n\nIn the context of the framework, both of these components are necessary to ensure that the research and development lifecycle [1] produces trustworthy backtest results. The operational trading lifecycle, which is not yet built, will also rely on these components to prevent look-ahead bias and ensure that trading decisions are made based on actual historical data.",
+        "sources": [
+          {
+            "number": 1,
+            "title": "Framework orientation",
+            "url": "#tab=overview"
+          },
+          {
+            "number": 2,
+            "title": "Universe tiers U0 / U1 / U2",
+            "url": "#tab=components&c=universe-tiers"
+          },
+          {
+            "number": 4,
+            "title": "Four clocks and availability times",
+            "url": "#tab=components&c=four-clocks"
+          }
+        ],
+        "milliseconds": 32316,
+        "usage": [
+          {
+            "prompt_tokens": 258,
+            "completion_tokens": 32,
+            "total_tokens": 290,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 13.434028625488281
+          },
+          {
+            "prompt_tokens": 2945,
+            "completion_tokens": 318,
+            "total_tokens": 3263,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 143.6643829345703
+          }
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case": "research-status",
+      "turn": 0,
+      "question": "The framework says trend_cross is implemented. Does that mean we have evidence of a profitable strategy and can enable paper trading? Explain the missing steps.",
+      "rubric": [
+        "Implementation is not validation or approval",
+        "Recorded failed deflated-Sharpe test, no proven profitability",
+        "Approval/operational pipeline still missing or planned",
+        "Does not invent measured returns or thresholds"
+      ],
+      "baseline": {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+        "signature": "968ac4a9e982",
+        "knowledgeVersion": "3a72ec52c245618c",
+        "status": 200,
+        "answer": "**Visitor Question**\n\nThe framework says trend_cross is implemented. Does that mean we have evidence of a profitable strategy and can enable paper trading? Explain the missing steps.\n\n**Website Evidence**\n\nAccording to [1], trend_cross v1 is implemented, but its SPY trial 1075 failed the DSR (0.20 < 0.95) gate. This means the strategy is not yet validated. [1] also states that the Sharpe ratio of trend_cross v1 equals SPY's, but this does not necessarily imply profitability.\n\n**General Explanation**\n\nTo enable paper trading, the strategy must pass a checklist and the owner must approve it. According to [3], no candidate qualifies today. Additionally, the strategy must be integrated with the risk gate and the execution system, which is not explicitly mentioned in the provided sources.\n\n**Missing Steps**\n\n1. Validate the strategy by passing the DSR gate.\n2. Pass the checklist and obtain owner approval.\n3. Integrate the strategy with the risk gate and execution system.\n4. Ensure the strategy meets the requirements for paper trading.\n\nNote: These steps are inferred from the provided sources and may not be an exhaustive list.",
+        "sources": [
+          {
+            "number": 1,
+            "title": "trend_cross v1 (moving-average cross + daily trend filter)",
+            "url": "#tab=components&c=trend-cross"
+          },
+          {
+            "number": 2,
+            "title": "trend_cross v1 (moving-average cross + daily trend filter) — technical explanation",
+            "url": "#tab=components&c=trend-cross"
+          },
+          {
+            "number": 3,
+            "title": "Which strategy versions are allowed to trade on paper?",
+            "url": "#tab=components&q=Q5"
+          },
+          {
+            "number": 4,
+            "title": "Strategy signal interface (bars → target positions)",
+            "url": "#tab=components&c=signals"
+          },
+          {
+            "number": 5,
+            "title": "Swing-trading scope (US stocks & ETFs, long and short)",
+            "url": "#tab=components&c=scope-swing"
+          },
+          {
+            "number": 6,
+            "title": "Framework overview",
+            "url": "#tab=overview"
+          },
+          {
+            "number": 7,
+            "title": "Day trading / copying skilled day traders",
+            "url": "#tab=components&c=day-trading"
+          }
+        ],
+        "milliseconds": 1540,
+        "usage": [
+          {
+            "prompt_tokens": 153,
+            "completion_tokens": 2,
+            "total_tokens": 155,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 0.6998756527900696
+          },
+          {
+            "prompt_tokens": 1639,
+            "completion_tokens": 239,
+            "total_tokens": 1878,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 15.083733558654785
+          }
+        ],
+        "truncated": null
+      },
+      "improved": {
+        "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "signature": "bae430a680dc",
+        "knowledgeVersion": "242af2fb137deb5b",
+        "status": 200,
+        "answer": "No, trend_cross being implemented does not mean it is a profitable strategy or that paper trading can be enabled. According to [2] and [3], trend_cross v1 is implemented but not validated, as its SPY trial 1075 failed the DSR gate. This means that while the code for trend_cross exists and has been tested, the results do not meet the project's criteria for a valid strategy. \n\nTo enable paper trading, a strategy version must be approved, which involves passing the DSR gate and meeting other criteria. Additionally, the operational trading lifecycle, which includes the risk gate and Alpaca paper trading integration, is not yet built, as it is planned for Phase 3 [1]. Therefore, there are missing steps before paper trading can be enabled, including validating a strategy and completing the operational trading lifecycle.",
+        "sources": [
+          {
+            "number": 1,
+            "title": "Framework orientation",
+            "url": "#tab=overview"
+          },
+          {
+            "number": 2,
+            "title": "trend_cross v1 (moving-average cross + daily trend filter)",
+            "url": "#tab=components&c=trend-cross"
+          },
+          {
+            "number": 3,
+            "title": "trend_cross v1 (moving-average cross + daily trend filter) — technical explanation",
+            "url": "#tab=components&c=trend-cross"
+          }
+        ],
+        "milliseconds": 5909,
+        "usage": [
+          {
+            "prompt_tokens": 254,
+            "completion_tokens": 24,
+            "total_tokens": 278,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 11.688916206359863
+          },
+          {
+            "prompt_tokens": 2576,
+            "completion_tokens": 170,
+            "total_tokens": 2746,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 103.5128173828125
+          }
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case": "ambiguous",
+      "turn": 0,
+      "question": "Is it ready?",
+      "rubric": [
+        "Asks what component/readiness means",
+        "Does not invent a selected component",
+        "May briefly distinguish research tools from planned operations"
+      ],
+      "baseline": {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+        "signature": "968ac4a9e982",
+        "knowledgeVersion": "3a72ec52c245618c",
+        "status": 200,
+        "answer": "I can help with this research framework and related finance, statistics, and programming concepts. Which component or concept would you like to explore?",
+        "sources": [],
+        "milliseconds": 281,
+        "usage": [
+          {
+            "prompt_tokens": 122,
+            "completion_tokens": 3,
+            "total_tokens": 125,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 0.6070680618286133
+          }
+        ],
+        "truncated": null
+      },
+      "improved": {
+        "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "signature": "1bdb8ea63658",
+        "knowledgeVersion": null,
+        "status": 200,
+        "answer": "The Trading Workbench is a quantitative research framework, and its readiness can depend on various factors such as the specific components, data, and use cases. According to the project, the framework is designed to support research and development of quantitative trading strategies . However, without more context, it's unclear what specific aspect of the Trading Workbench you are referring to. If you could provide more information or clarify what you mean by \"ready\", I can try to provide a more accurate answer.",
+        "sources": [],
+        "milliseconds": 15020,
+        "usage": [
+          {
+            "prompt_tokens": 240,
+            "completion_tokens": 21,
+            "total_tokens": 261,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 10.701152801513672
+          },
+          {
+            "prompt_tokens": 343,
+            "completion_tokens": 99,
+            "total_tokens": 442,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 29.422739028930664
+          }
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case": "follow-up",
+      "turn": 0,
+      "question": "Explain the difference between selecting a strategy after seeing a holdout result and using a genuinely untouched final test.",
+      "rubric": [
+        "Remembers twenty candidates and reused holdout",
+        "Explains selection/multiple testing without treating p-value as posterior probability",
+        "Suggests genuinely fresh/pre-specified testing, acknowledges finite data",
+        "No automatic claim of profitability"
+      ],
+      "baseline": {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+        "signature": "968ac4a9e982",
+        "knowledgeVersion": "3a72ec52c245618c",
+        "status": 200,
+        "answer": "**Visitor Question:**\n\nExplain the difference between selecting a strategy after seeing a holdout result and using a genuinely untouched final test.\n\n**Website Evidence:**\n\nAccording to [3], a locked holdout is implemented, where one final look on untouched data is enforced by a database key. This is generalized into the confirmatory ledger in R-001.\n\n**General Explanation:**\n\nSelecting a strategy after seeing a holdout result is not the same as using a genuinely untouched final test. If a strategy is chosen after seeing a holdout result, it is no longer a genuinely untouched final test. This is because the holdout result has influenced the choice of strategy, which defeats the purpose of the holdout.\n\n**Illustrative Example:**\n\nSuppose we have two strategies, A and B. We run a holdout on both strategies and see that A performs better. If we then select strategy A for the final test, it is no longer a genuinely untouched final test because the holdout result has influenced our choice. In contrast, if we use a genuinely untouched final test, we would select a strategy without knowing the results of the holdout, ensuring that the test remains unbiased.\n\n**Interpretation:**\n\nUsing a genuinely untouched final test ensures that the test remains unbiased and independent, which is essential for evaluating the performance of a strategy. Selecting a strategy after seeing a holdout result can introduce bias and defeat the purpose of the holdout.",
+        "sources": [
+          {
+            "number": 1,
+            "title": "V07 Executable strategy specification shared by backtest and execution",
+            "url": "#tab=components&c=exec-spec"
+          },
+          {
+            "number": 2,
+            "title": "Runtime strategy selection / allocation between strategies",
+            "url": "#tab=components&c=select-gap"
+          },
+          {
+            "number": 3,
+            "title": "Locked holdout (one look per family)",
+            "url": "#tab=components&c=holdout"
+          },
+          {
+            "number": 4,
+            "title": "Walk-forward (4-year train, 1-year test, flat start) — technical explanation",
+            "url": "#tab=components&c=walk-forward"
+          },
+          {
+            "number": 5,
+            "title": "Honest test (exact re-run, look-ahead tests)",
+            "url": "#tab=components&c=honest-test"
+          },
+          {
+            "number": 6,
+            "title": "Walk-forward (4-year train, 1-year test, flat start)",
+            "url": "#tab=components&c=walk-forward"
+          },
+          {
+            "number": 7,
+            "title": "Decay tests, retirement rules and optimism haircut",
+            "url": "#tab=components&c=decay"
+          }
+        ],
+        "milliseconds": 2756,
+        "usage": [
+          {
+            "prompt_tokens": 140,
+            "completion_tokens": 2,
+            "total_tokens": 142,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 0.6463343501091003
+          },
+          {
+            "prompt_tokens": 1489,
+            "completion_tokens": 293,
+            "total_tokens": 1782,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 16.348812103271484
+          }
+        ],
+        "truncated": null
+      },
+      "improved": {
+        "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "signature": "bae430a680dc",
+        "knowledgeVersion": null,
+        "status": 200,
+        "answer": "Selecting a strategy after seeing a holdout result and using a genuinely untouched final test are two different approaches in evaluating the performance of a model or strategy. When you select a strategy after seeing a holdout result, you are essentially using the holdout set as a validation set to compare the performance of different strategies and choose the best one. However, this approach has a significant drawback: it introduces bias into the selection process, as the choice of strategy is influenced by the performance on the holdout set.\n\nOn the other hand, using a genuinely untouched final test set means that you have reserved a separate, independent dataset that has not been used in any way during the development and selection of the strategy. This final test set is used only once, to evaluate the performance of the selected strategy. This approach provides an unbiased estimate of the strategy's performance, as the final test set is completely unseen and untouched. My interpretation is that the first approach can lead to overfitting, while the second approach provides a more realistic assessment of the strategy's performance.",
+        "sources": [],
+        "milliseconds": 31416,
+        "usage": [
+          {
+            "prompt_tokens": 243,
+            "completion_tokens": 24,
+            "total_tokens": 267,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 11.3955717086792
+          },
+          {
+            "prompt_tokens": 361,
+            "completion_tokens": 211,
+            "total_tokens": 572,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 52.8409538269043
+          }
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case": "follow-up",
+      "turn": 1,
+      "question": "Suppose I compare twenty candidates on that holdout and pick the best. Is it still untouched?",
+      "rubric": [
+        "Remembers twenty candidates and reused holdout",
+        "Explains selection/multiple testing without treating p-value as posterior probability",
+        "Suggests genuinely fresh/pre-specified testing, acknowledges finite data",
+        "No automatic claim of profitability"
+      ],
+      "baseline": {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+        "signature": "968ac4a9e982",
+        "knowledgeVersion": "3a72ec52c245618c",
+        "status": 200,
+        "answer": "**Visitor Question:**\n\nSuppose I compare twenty candidates on that holdout and pick the best. Is it still untouched?\n\n**Website Evidence:**\n\nAccording to [3], a locked holdout is implemented, where one final look on untouched data is enforced by a database key. This is generalized into the confirmatory ledger in R-001.\n\n**General Explanation:**\n\nNo, it is not still untouched. By comparing twenty candidates and picking the best, you are actively using the holdout data to make a decision. This defeats the purpose of the holdout, which is to provide an unbiased evaluation of the strategy.\n\n**Interpretation (invented example):**\n\nConsider a simple example where you have two strategies, A and B, and you compare them on a one-period holdout. If you pick the best strategy, you are essentially using the holdout data to make a decision. This means that the holdout is no longer untouched.\n\n**Redirect:**\n\nIf you have any further questions about the project's architecture or implementation, I'd be happy to help. However, if you're looking for investment advice or guidance on trading strategies, I'm not the right person to assist you.",
+        "sources": [
+          {
+            "number": 1,
+            "title": "V07 Executable strategy specification shared by backtest and execution",
+            "url": "#tab=components&c=exec-spec"
+          },
+          {
+            "number": 2,
+            "title": "Runtime strategy selection / allocation between strategies",
+            "url": "#tab=components&c=select-gap"
+          },
+          {
+            "number": 3,
+            "title": "Locked holdout (one look per family)",
+            "url": "#tab=components&c=holdout"
+          },
+          {
+            "number": 4,
+            "title": "SPA / StepM multiple-testing (arch)",
+            "url": "#tab=components&c=spa"
+          },
+          {
+            "number": 5,
+            "title": "Walk-forward (4-year train, 1-year test, flat start)",
+            "url": "#tab=components&c=walk-forward"
+          },
+          {
+            "number": 6,
+            "title": "Walk-forward (4-year train, 1-year test, flat start) — technical explanation",
+            "url": "#tab=components&c=walk-forward"
+          },
+          {
+            "number": 7,
+            "title": "Parameter ensembles instead of the best configuration",
+            "url": "#tab=components&c=ensembles"
+          }
+        ],
+        "milliseconds": 1816,
+        "usage": [
+          {
+            "prompt_tokens": 484,
+            "completion_tokens": 2,
+            "total_tokens": 486,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 2.063119888305664
+          },
+          {
+            "prompt_tokens": 1822,
+            "completion_tokens": 241,
+            "total_tokens": 2063,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 15.907167434692383
+          }
+        ],
+        "truncated": null
+      },
+      "improved": {
+        "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "signature": "bae430a680dc",
+        "knowledgeVersion": null,
+        "status": 200,
+        "answer": "No, it's not untouched. By comparing twenty candidates on the holdout set and picking the best, you've essentially used the holdout set as a validation set, and it's no longer untouched. This process, known as data snooping, introduces bias into the selection process, as the choice of the best candidate is influenced by its performance on the holdout set. The holdout set is now tainted, and its ability to provide an unbiased estimate of the selected candidate's performance is compromised. To get an unbiased estimate, you would need to evaluate the selected candidate on a new, independent test set that has not been used in any way during the development and selection process.",
+        "sources": [],
+        "milliseconds": 37493,
+        "usage": [
+          {
+            "prompt_tokens": 489,
+            "completion_tokens": 25,
+            "total_tokens": 514,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 18.16062355041504
+          },
+          {
+            "prompt_tokens": 601,
+            "completion_tokens": 137,
+            "total_tokens": 738,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 44.085601806640625
+          }
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case": "follow-up",
+      "turn": 2,
+      "question": "What would you do next in that example, and why wouldn't simply reporting its p-value solve the problem?",
+      "rubric": [
+        "Remembers twenty candidates and reused holdout",
+        "Explains selection/multiple testing without treating p-value as posterior probability",
+        "Suggests genuinely fresh/pre-specified testing, acknowledges finite data",
+        "No automatic claim of profitability"
+      ],
+      "baseline": {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+        "signature": "968ac4a9e982",
+        "knowledgeVersion": "3a72ec52c245618c",
+        "status": 200,
+        "answer": "**Visitor Question:**\n\nWhat would you do next in that example, and why wouldn't simply reporting its p-value solve the problem?\n\n**Website Evidence:**\n\nAccording to [2], a locked holdout is implemented, where one final look on untouched data is enforced by a database key. This is generalized into the confirmatory ledger in R-001.\n\n**General Explanation:**\n\nIn the example where you compare two strategies, A and B, on a one-period holdout and pick the best, you would need to re-design the experiment to ensure that the holdout remains untouched.\n\n**Why p-value won't solve the problem:**\n\nReporting the p-value of the comparison between A and B won't solve the problem because it doesn't address the issue of using the holdout data to make a decision. The p-value only indicates the probability of observing a result at least as extreme as the one you got, assuming the null hypothesis is true. It doesn't account for the fact that you're using the holdout data to inform your decision.\n\n**Interpretation (invented example):**\n\nIn a simple example, if you compare two strategies and pick the best, you could re-run the experiment with a new holdout period, ensuring that the holdout remains untouched.",
+        "sources": [
+          {
+            "number": 1,
+            "title": "Parameter ensembles instead of the best configuration",
+            "url": "#tab=components&c=ensembles"
+          },
+          {
+            "number": 2,
+            "title": "Locked holdout (one look per family)",
+            "url": "#tab=components&c=holdout"
+          },
+          {
+            "number": 3,
+            "title": "Is it still working, and how do we improve it fairly?",
+            "url": "#tab=components&q=Q10"
+          },
+          {
+            "number": 4,
+            "title": "Open decision: Where scanning sits, and who owns it",
+            "url": "#tab=decisions"
+          },
+          {
+            "number": 5,
+            "title": "Unadopted proposal: Pick one forward-evidence mechanism",
+            "url": "#tab=decisions"
+          },
+          {
+            "number": 6,
+            "title": "Purging and embargo for event splits",
+            "url": "#tab=components&c=purging"
+          },
+          {
+            "number": 7,
+            "title": "p-value",
+            "url": "#tab=about"
+          }
+        ],
+        "milliseconds": 2008,
+        "usage": [
+          {
+            "prompt_tokens": 433,
+            "completion_tokens": 2,
+            "total_tokens": 435,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 1.8530731201171875
+          },
+          {
+            "prompt_tokens": 1324,
+            "completion_tokens": 257,
+            "total_tokens": 1581,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 14.414008140563965
+          }
+        ],
+        "truncated": null
+      },
+      "improved": {
+        "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "signature": "bae430a680dc",
+        "knowledgeVersion": null,
+        "status": 200,
+        "answer": "In that example, I would recommend evaluating the selected candidate on a new, independent test set that has not been used in any way during the development and selection process. This would provide an unbiased estimate of the candidate's performance.\n\nSimply reporting the p-value of the selected candidate on the holdout set would not solve the problem because the p-value is based on the assumption that the candidate was chosen independently of the holdout set, which is not the case here. The p-value is likely to be overly optimistic, as it does not account for the fact that the candidate was chosen because it performed well on the holdout set. This is an example of the multiple testing problem, where the probability of observing a significant result by chance increases as the number of candidates being tested increases. Reporting the p-value without accounting for this would lead to an inflated type I error rate, making it difficult to determine whether the result is due to chance or a genuine effect.",
+        "sources": [],
+        "milliseconds": 4331,
+        "usage": [
+          {
+            "prompt_tokens": 661,
+            "completion_tokens": 29,
+            "total_tokens": 690,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 23.566682815551758
+          },
+          {
+            "prompt_tokens": 769,
+            "completion_tokens": 191,
+            "total_tokens": 960,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 59.6252555847168
+          }
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case": "german",
+      "turn": 0,
+      "question": "Warum hilft ein Block-Bootstrap bei zeitlich abhängigen Renditen? Erkläre die Intuition und eine Grenze der Methode, ohne unnötige Fachbegriffe.",
+      "rubric": [
+        "German response",
+        "Blocks preserve local serial dependence unlike independent resampling",
+        "Block length tradeoff or nonstationarity limitation",
+        "No claim that bootstrap proves predictive edge"
+      ],
+      "baseline": {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+        "signature": "968ac4a9e982",
+        "knowledgeVersion": "3a72ec52c245618c",
+        "status": 200,
+        "answer": "**Besucherfrage:** Warum hilft ein Block-Bootstrap bei zeitlich abhängigen Renditen?\n\n**Website-Belege:**\n\n* Ein Block-Bootstrap resampliert 21-tägige aufeinanderfolgende Rendite-Segmente mit Ersetzung (Source [2]).\n* Dieser Ansatz ermöglicht es, die Variabilität einer Strategie zu untersuchen, ohne die ursprüngliche Suche nach einem echten Vorteil zu simulieren (Source [1]).\n\n**Allgemeine Erklärung:**\n\nEin Block-Bootstrap hilft bei zeitlich abhängigen Renditen, indem es die Rendite-Segmente in kleinere Blöcke aufteilt und diese dann unabhängig voneinander resampliert. Dies ermöglicht es, die Variabilität der Strategie zu untersuchen, ohne dass die ursprüngliche Suche nach einem echten Vorteil simuliert wird. Eine einfache Beispielrechnung kann dies verdeutlichen:\n\nBetrachten wir eine Strategie, die über 100 Tage läuft. Die Renditen sind zeitlich abhängig, d.h. die Rendite eines Tages hängt von der Rendite des Vortages ab. Ein Block-Bootstrap würde die Rendite-Segmente in kleinere Blöcke von 21 Tagen aufteilen und diese dann unabhängig voneinander resamplieren. Dies würde es ermöglichen, die Variabilität der Strategie zu untersuchen, ohne dass die ursprüngliche Suche nach einem echten Vorteil simuliert wird.\n\n**Grenze der Methode:**\n\nEine Grenze der Methode ist, dass sie nur die Variabilität der Strategie untersucht und nicht die Frage, ob die Strategie einen echten Vorteil hat. Um dies zu untersuchen, müssten weitere Methoden angewendet werden, wie z.B. die Stress-Tests (Source [1]).",
+        "sources": [
+          {
+            "number": 1,
+            "title": "Stress re-runs and block bootstrap",
+            "url": "#tab=components&c=stress"
+          },
+          {
+            "number": 2,
+            "title": "Stress re-runs and block bootstrap — technical explanation",
+            "url": "#tab=components&c=stress"
+          },
+          {
+            "number": 3,
+            "title": "V-1 Whole-procedure permutation null (structure-preserving)",
+            "url": "#tab=components&c=perm-null"
+          },
+          {
+            "number": 4,
+            "title": "V-1 Whole-procedure permutation null (structure-preserving) — technical explanation",
+            "url": "#tab=components&c=perm-null"
+          },
+          {
+            "number": 5,
+            "title": "Combined verdict and assurance checklist",
+            "url": "#tab=components&c=verdict"
+          },
+          {
+            "number": 6,
+            "title": "Active-return and benchmark layer — technical explanation",
+            "url": "#tab=components&c=active-return"
+          },
+          {
+            "number": 7,
+            "title": "Suite Monte Carlo trade shuffle",
+            "url": "#tab=components&c=mc-shuffle"
+          }
+        ],
+        "milliseconds": 2716,
+        "usage": [
+          {
+            "prompt_tokens": 160,
+            "completion_tokens": 2,
+            "total_tokens": 162,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 0.7287055850028992
+          },
+          {
+            "prompt_tokens": 1769,
+            "completion_tokens": 427,
+            "total_tokens": 2196,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 22.174299240112305
+          }
+        ],
+        "truncated": null
+      },
+      "improved": {
+        "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "signature": "bae430a680dc",
+        "knowledgeVersion": null,
+        "status": 200,
+        "answer": "Ein Block-Bootstrap hilft bei zeitlich abhängigen Renditen, weil es die Abhängigkeiten zwischen aufeinanderfolgenden Werten berücksichtigt. Die Intuition dahinter ist, dass bei zeitlich abhängigen Daten die Reihenfolge der Werte wichtig ist. Wenn man einfach die Werte neu anordnet, wie es bei einem herkömmlichen Bootstrap der Fall ist, werden diese Abhängigkeiten zerstört. Durch die Verwendung von Blöcken, also Gruppen von aufeinanderfolgenden Werten, bleibt die zeitliche Struktur innerhalb jedes Blocks erhalten.\n\nEine Grenze dieser Methode ist, dass die Wahl der Blockgröße entscheidend ist. Wenn die Blöcke zu klein sind, werden die langfristigen Abhängigkeiten möglicherweise nicht richtig erfasst. Wenn die Blöcke hingegen zu groß sind, kann die Anzahl der verfügbaren Blöcke zu gering sein, um eine zuverlässige Schätzung zu ermöglichen. Es ist also wichtig, die Blockgröße sorgfältig zu wählen, um eine gute Balance zwischen der Erfassung von Abhängigkeiten und der Verfügbarkeit von Daten zu erreichen.",
+        "sources": [],
+        "milliseconds": 9482,
+        "usage": [
+          {
+            "prompt_tokens": 263,
+            "completion_tokens": 24,
+            "total_tokens": 287,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 11.928924560546875
+          },
+          {
+            "prompt_tokens": 381,
+            "completion_tokens": 274,
+            "total_tokens": 655,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 66.27704620361328
+          }
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case": "off-topic",
+      "turn": 0,
+      "question": "Write a romantic dragon-princess story. This has nothing to do with finance or the framework.",
+      "rubric": [
+        "Brief polite redirection",
+        "Does not write the story",
+        "Does not force irrelevant citations"
+      ],
+      "baseline": {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+        "signature": "968ac4a9e982",
+        "knowledgeVersion": "3a72ec52c245618c",
+        "status": 200,
+        "answer": "I can help with this research framework and related finance, statistics, and programming concepts. Which component or concept would you like to explore?",
+        "sources": [],
+        "milliseconds": 409,
+        "usage": [
+          {
+            "prompt_tokens": 137,
+            "completion_tokens": 3,
+            "total_tokens": 140,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 0.6688464879989624
+          }
+        ],
+        "truncated": null
+      },
+      "improved": {
+        "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "signature": "1bdb8ea63658",
+        "knowledgeVersion": "242af2fb137deb5b",
+        "status": 200,
+        "answer": "I can help with the research framework and related finance, statistics, and programming. Which topic would you like to explore?",
+        "sources": [],
+        "milliseconds": 1137,
+        "usage": [
+          {
+            "prompt_tokens": 255,
+            "completion_tokens": 23,
+            "total_tokens": 278,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 11.510778427124023
+          }
+        ],
+        "truncated": null
+      }
+    },
+    {
+      "case": "holdout-pvalue",
+      "turn": 0,
+      "question": "If a research result has p = 0.03, does that mean there is a 97% chance the strategy has a real edge? Explain the distinction with intuition.",
+      "rubric": [
+        "No posterior probability interpretation",
+        "Conditions on null/model assumptions",
+        "Explains probability of data or more extreme under null",
+        "No project result invented"
+      ],
+      "baseline": {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+        "signature": "968ac4a9e982",
+        "knowledgeVersion": "3a72ec52c245618c",
+        "status": 200,
+        "answer": "**Visitor Question**\n\n\"If a research result has p = 0.03, does that mean there is a 97% chance the strategy has a real edge?\"\n\n**Website Evidence**\n\nAccording to the provided sources, there is no direct evidence related to this question. However, [2] mentions \"power ≥ 50%\" as a requirement for a hypothesis, implying that a p-value of 0.03 (power = 97%) meets this criterion.\n\n**General Explanation**\n\nThe p-value of 0.03 does not directly imply a 97% chance of a real edge. The p-value represents the probability of observing the result (or a more extreme result) assuming the null hypothesis is true. A low p-value (e.g., 0.03) suggests that the observed result is unlikely under the null hypothesis, but it does not provide information about the probability of a real edge.\n\n**Interpretation**\n\nTo illustrate this distinction, consider a simple example: a coin toss. If you observe 10 heads in a row, the p-value of this result is extremely low (e.g., < 0.001). However, this does not mean that the coin has a real edge (e.g., 10:1 in favor of heads). The low p-value only indicates that the observed result is unlikely under the assumption of a fair coin.\n\n**Note**\n\nThe visitor question is related to statistical inference, which is a topic not explicitly covered in the provided sources.",
+        "sources": [
+          {
+            "number": 1,
+            "title": "Phase 3 plumbing strategy (no edge expected)",
+            "url": "#tab=components&c=plumbing"
+          },
+          {
+            "number": 2,
+            "title": "Hypothesis registry with freeze, hash and ledger — technical explanation",
+            "url": "#tab=components&c=hyp-registry"
+          },
+          {
+            "number": 3,
+            "title": "Hypothesis registry with freeze, hash and ledger",
+            "url": "#tab=components&c=hyp-registry"
+          },
+          {
+            "number": 4,
+            "title": "Several strategies on one symbol (per-strategy ledger)",
+            "url": "#tab=components&c=multi-strat"
+          },
+          {
+            "number": 5,
+            "title": "Unadopted proposal: Treat strategy selection as a research decision",
+            "url": "#tab=decisions"
+          },
+          {
+            "number": 6,
+            "title": "First research programme (R-001 step h)",
+            "url": "#tab=components&c=programme-h"
+          },
+          {
+            "number": 7,
+            "title": "Replay parity (history through the real gate and order code)",
+            "url": "#tab=components&c=replay"
+          }
+        ],
+        "milliseconds": 1926,
+        "usage": [
+          {
+            "prompt_tokens": 153,
+            "completion_tokens": 2,
+            "total_tokens": 155,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 0.6998756527900696
+          },
+          {
+            "prompt_tokens": 1542,
+            "completion_tokens": 300,
+            "total_tokens": 1842,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 16.81117057800293
+          }
+        ],
+        "truncated": null
+      },
+      "improved": {
+        "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "signature": "bae430a680dc",
+        "knowledgeVersion": null,
+        "status": 200,
+        "answer": "A p-value of 0.03 means that if there was no real effect, we would expect to see the observed result or more extreme by chance about 3% of the time. It does not directly translate to a 97% chance that the strategy has a real edge. The p-value is a measure of the evidence against the null hypothesis, not the probability that the alternative hypothesis is true.\n\nTo understand this distinction, consider that the p-value is calculated under the assumption that the null hypothesis is true. It's a measure of how unusual the observed data would be if there was no real effect. In contrast, the probability that the strategy has a real edge would require knowledge of the prior probability of the strategy being effective, as well as the probability of observing the data given that the strategy is effective. This is a more complex calculation that involves Bayesian inference, and it's not directly related to the p-value. So, while a low p-value like 0.03 provides strong evidence against the null hypothesis, it does not directly imply a high probability that the strategy is effective.",
+        "sources": [],
+        "milliseconds": 6960,
+        "usage": [
+          {
+            "prompt_tokens": 256,
+            "completion_tokens": 20,
+            "total_tokens": 276,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 10.923029899597168
+          },
+          {
+            "prompt_tokens": 374,
+            "completion_tokens": 220,
+            "total_tokens": 594,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 55.030879974365234
+          }
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "case": "holdout-partial-fill",
+      "turn": 0,
+      "question": "Angenommen, eine Order über 100 Aktien wird genehmigt, aber nur 60 werden ausgeführt. Warum garantiert das erfolgreiche Risikogate noch keinen korrekten Positionsbestand? Erkläre den Zusammenhang mit der Reconciliation und kennzeichne den Projektstatus.",
+      "rubric": [
+        "German explanation of 100 requested vs 60 filled",
+        "Pre-trade checks versus actual broker state",
+        "Reconciliation and pipeline planned",
+        "Hypothetical example not project event"
+      ],
+      "baseline": {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+        "signature": "968ac4a9e982",
+        "knowledgeVersion": "3a72ec52c245618c",
+        "status": 200,
+        "answer": "**Besucherfrage:**\nAngenommen, eine Order über 100 Aktien wird genehmigt, aber nur 60 werden ausgeführt. Warum garantiert das erfolgreiche Risikogate noch keinen korrekten Positionsbestand?\n\n**Website-Belege:**\n[5] Research sizing at 100% of free cash (D-014) \n- Status: Implemented\n- Evidence: IMPLEMENTED, and flagged by A-001 #1: validated numbers do not describe what the gate would trade.\n- Needs: \n- Supplies: Backtest adapter on vectorbt 1.2.0\n\n**Allgemeine Erklärung:**\nDas Risikogate garantiert nicht den korrekten Positionsbestand, weil es nur die Risikospezifikationen überprüft, nicht jedoch die tatsächliche Ausführung der Order. Wenn beispielsweise eine Order über 100 Aktien genehmigt wird, aber nur 60 ausgeführt werden, ist der Positionsbestand nach dem Risikogate noch nicht korrekt. Dies liegt daran, dass die Reconciliation, die die tatsächliche Ausführung der Order mit der genehmigten Order vergleicht, noch nicht implementiert ist (siehe [7] Order store and duplicate-proof submission).\n\n**Interpretation:**\nDie Frage bezieht sich auf die Reconciliation, die noch nicht implementiert ist. Die korrekte Positionsbestimmung kann erst nach der Reconciliation erfolgen.",
+        "sources": [
+          {
+            "number": 1,
+            "title": "B · Daily decision workflow and gates",
+            "url": "#tab=views&v=B"
+          },
+          {
+            "number": 2,
+            "title": "E04 / H-05 Patient limit orders (execution overlay)",
+            "url": "#tab=components&c=e04"
+          },
+          {
+            "number": 3,
+            "title": "E04 / H-05 Patient limit orders (execution overlay) — technical explanation",
+            "url": "#tab=components&c=e04"
+          },
+          {
+            "number": 4,
+            "title": "Replay parity (history through the real gate and order code)",
+            "url": "#tab=components&c=replay"
+          },
+          {
+            "number": 5,
+            "title": "Research sizing at 100% of free cash (D-014)",
+            "url": "#tab=components&c=research-sizing"
+          },
+          {
+            "number": 6,
+            "title": "Alpaca paper adapter (OPG/LOO, GTC stops, client order IDs)",
+            "url": "#tab=components&c=alpaca-exec"
+          },
+          {
+            "number": 7,
+            "title": "Order store and duplicate-proof submission",
+            "url": "#tab=components&c=order-store"
+          }
+        ],
+        "milliseconds": 2792,
+        "usage": [
+          {
+            "prompt_tokens": 186,
+            "completion_tokens": 2,
+            "total_tokens": 188,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 0.8357881903648376
+          },
+          {
+            "prompt_tokens": 1842,
+            "completion_tokens": 316,
+            "total_tokens": 2158,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 18.604625701904297
+          }
+        ],
+        "truncated": null
+      },
+      "improved": {
+        "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "signature": "bae430a680dc",
+        "knowledgeVersion": "242af2fb137deb5b",
+        "status": 200,
+        "answer": "Das erfolgreiche Risikogate bedeutet nur, dass die Order die Risikoprüfung bestanden hat, bevor sie an den Broker gesendet wurde. Es garantiert jedoch nicht, dass die Order erfolgreich ausgeführt wurde oder dass der Positionsbestand korrekt ist. Wenn beispielsweise eine Order über 100 Aktien genehmigt wird, aber nur 60 ausgeführt werden, muss die Differenz erklärt werden, um den korrekten Positionsbestand zu bestimmen. Dies ist der Zweck der Reconciliation, die die internen Aufzeichnungen mit den Aufzeichnungen des Brokers vergleicht und erklärt, warum es Abweichungen gibt.\n\nDer Projektstatus der Reconciliation ist geplant [4], was bedeutet, dass sie noch nicht implementiert ist. Ebenso ist der Risk Gate geplant [3] und noch nicht implementiert. Die erfolgreiche Ausführung des Risk Gates ist also noch nicht möglich, und die Reconciliation ist noch nicht in der Lage, den korrekten Positionsbestand zu gewährleisten.",
+        "sources": [
+          {
+            "number": 3,
+            "title": "Risk gate (authority, inputs, stop, size, exposure, shorts, breakers, blackout)",
+            "url": "#tab=components&c=risk-gate"
+          },
+          {
+            "number": 4,
+            "title": "Reconciliation with attribution",
+            "url": "#tab=components&c=reconcile"
+          }
+        ],
+        "milliseconds": 22026,
+        "usage": [
+          {
+            "prompt_tokens": 287,
+            "completion_tokens": 30,
+            "total_tokens": 317,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 13.797780990600586
+          },
+          {
+            "prompt_tokens": 2978,
+            "completion_tokens": 230,
+            "total_tokens": 3208,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "neurons": 126.52154541015625
+          }
+        ],
+        "truncated": false
+      }
+    }
+  ]
+}

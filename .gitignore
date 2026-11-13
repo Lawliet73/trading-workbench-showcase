@@ -3,3 +3,6 @@ knowledge.json
 _site/
 .wrangler/
 assistant-worker/.wrangler/
+
+.checkpoint.md
+eval/results/
