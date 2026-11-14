@@ -19,3 +19,46 @@ test('unknown diagram and system-message injection are rejected',()=>{assert.thr
  const after=await build(dir);assert.notEqual(before.version,after.version);assert.ok(retrieve(after,{question:'Freshness test'}).some(r=>r.text==='Updated educational definition'));
  } finally {await fs.rm(dir,{recursive:true,force:true});}
  });
+
+import {assembleContext} from '../assistant-worker/retrieval.mjs';
+import {makeMessages,normalizeCitations,citedSources,visibleAnswer} from '../assistant-worker/tutor.mjs';
+import {handle} from '../assistant-worker/worker.mjs';
+test('architecture context retains the diagram, core statuses and connected components',async()=>{
+ const k=await build(root);const packed=assembleContext(k,{question:'How do orders connect the risk gate and reconciliation?',diagram:'B'});
+ for(const id of ['view:B','component:risk-gate','component:reconcile','component:pipeline'])assert.ok(packed.sources.some(s=>s.id===id),id);
+ assert.ok(new TextEncoder().encode(packed.text).length<=14000);
+ assert.match(k.records.find(r=>r.id==='component:risk-gate').text,/Status: Planned/);
+ assert.ok(k.records.find(r=>r.id==='component:risk-gate').related.includes('alpaca-exec'));
+});
+test('semantic passages and reverse relationships survive the public build',async()=>{
+ const k=await build(root);assert.equal(k.schemaVersion,2);
+ assert.ok(k.records.filter(r=>r.type==='component').every(r=>r.text.includes('Recorded evidence:')&&r.text.includes('Status:')));
+ const core=k.records.find(r=>r.id==='component:approval');assert.ok(core.related.includes('risk-gate'));
+});
+test('generation keeps all bounded conversation turns without treating them as instructions',()=>{
+ const history=Array.from({length:8},(_,i)=>({role:i%2?'assistant':'user',content:'turn '+i}));
+ const messages=makeMessages({language:'en',question:'And why?',history},'');
+ assert.deepEqual(messages.slice(1,-1),history);assert.equal(messages.at(-1).content,'And why?');
+ assert.throws(()=>validateChat({question:'x',language:'en',history:[null]}));
+ assert.throws(()=>validateChat({question:'x',language:'en',history:Array(10).fill({role:'user',content:'x'})}));
+});
+test('citation display includes only cited available sources and excludes internal reasoning',()=>{
+ const sources=[{title:'A',url:'#tab=about'},{title:'B',url:'#tab=views&v=B'}];
+ const answer=normalizeCitations('Example [1, 2]. More 【2†L1-L5】. Invalid [99].',sources);
+ assert.equal(answer,'Example [1][2]. More [2]. Invalid .');
+ assert.deepEqual(citedSources('Claim [2]',sources).map(s=>s.number),[2]);
+ assert.equal(visibleAnswer({response:'<think>internal</think>Visible'}),'Visible');
+ assert.equal(visibleAnswer({response:'<think>incomplete'}),'');
+});
+const req=question=>new Request('https://example.com/api/chat',{method:'POST',headers:{Origin:'https://lawliet73.github.io','Content-Type':'application/json','CF-Connecting-IP':'192.0.2.1'},body:JSON.stringify({question,language:'en'})});
+const baseEnv={ENABLED:'true',FREE_PLAN_CONFIRMED:'true',SITE_ORIGIN:'https://lawliet73.github.io'};
+const fakeDB=allowed=>({prepare(){return {bind(){return this},async first(){return allowed?{count:1}:null},async run(){return {}}}}});
+test('off-topic requests stop before generation; quota stops before any model call',async()=>{
+ for(const intent of ['unrelated']){let calls=0;const r=await handle(req('test'),{...baseEnv,DB:fakeDB(true),AI:{async run(){calls++;return {response:JSON.stringify({intent,query:'',project:false})}}}},{waitUntil(){}});assert.equal(r.status,200);assert.equal(calls,1);assert.deepEqual((await r.json()).sources,[]);}
+ let called=false;const limited=await handle(req('test'),{...baseEnv,DB:fakeDB(false),AI:{async run(){called=true;}}},{waitUntil(){}});assert.equal(limited.status,429);assert.equal(called,false);
+});
+
+test('build-time search index preserves retrieval exactly while avoiding request-time tokenization',async()=>{
+ const k=await build(root),raw={...k,index:undefined,records:k.records.map(({search,...r})=>r)};
+ for(const b of [{question:'How do risk gate and reconciliation relate?',diagram:'B'},{question:'What does the status mean?',component:'trend-cross'},{question:'Why does block bootstrap help?'},{question:'What about that?',history:[{role:'user',content:'Compare universe membership and clocks'}]}])assert.equal(assembleContext(k,b).text,assembleContext(raw,b).text);
+});
