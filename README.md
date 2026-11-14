@@ -68,3 +68,6 @@ Cloudflare Workers AI uses Llama 3.3 70B Instruct FP8 Fast for bounded intent/qu
 To preview the derived content: `node scripts/build-knowledge.mjs .`. The generated file is deployed with the site, not maintained by hand. To deploy the Worker: `npx wrangler deploy --config assistant-worker/wrangler.jsonc`. Credentials stay in Wrangler's credential store, never in site files. Disable inference by setting `ENABLED` to `false` in that configuration and redeploying.
 
 Quality comparison, limitations and opt-in reproducible evaluation: [eval/README.md](eval/README.md).
+
+## Shared Archify content
+The canonical interface is `docs/framework-map/` in Trading Workbench. This repository mirrors it without educational-content filtering. Both interfaces use the same tutor endpoint and generated knowledge; update the canonical website and use its publisher to propose a mirror PR. No private-document ingestion is needed. Repository source links retain their existing access permissions. `ADDITIONAL_SITE_ORIGINS` is a comma-separated explicit origin list for the shared tutor; the checked-in localhost preview origins require an approved Worker deployment before they work against production. No authentication is added.

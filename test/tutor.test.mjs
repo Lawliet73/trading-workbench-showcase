@@ -62,3 +62,10 @@ test('build-time search index preserves retrieval exactly while avoiding request
  const k=await build(root),raw={...k,index:undefined,records:k.records.map(({search,...r})=>r)};
  for(const b of [{question:'How do risk gate and reconciliation relate?',diagram:'B'},{question:'What does the status mean?',component:'trend-cross'},{question:'Why does block bootstrap help?'},{question:'What about that?',history:[{role:'user',content:'Compare universe membership and clocks'}]}])assert.equal(assembleContext(k,b).text,assembleContext(raw,b).text);
 });
+
+test('shared tutor allows explicit internal origins but rejects arbitrary websites',async()=>{
+ const env={SITE_ORIGIN:'https://lawliet73.github.io',ADDITIONAL_SITE_ORIGINS:'http://localhost:8807'};
+ const {handle}=await import('../assistant-worker/worker.mjs');
+ for(const origin of [env.SITE_ORIGIN,'http://localhost:8807']){const r=await handle(new Request('https://worker/api/chat',{method:'OPTIONS',headers:{Origin:origin}}),env);assert.equal(r.status,204);assert.equal(r.headers.get('Access-Control-Allow-Origin'),origin);}
+ await assert.rejects(handle(new Request('https://worker/api/chat',{method:'OPTIONS',headers:{Origin:'https://unapproved.example'}}),env),/Origin not allowed/);
+});

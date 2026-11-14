@@ -28,7 +28,8 @@ export async function handle(request,env,ctx) {
   const path=new URL(request.url).pathname;
   if(path!=='/api/chat') return json({error:'Not found.'},404);
   const origin=request.headers.get('Origin');
-  if(!env.SITE_ORIGIN || origin!==env.SITE_ORIGIN) fail(403,'Origin not allowed.');
+  const origins=[env.SITE_ORIGIN,...(env.ADDITIONAL_SITE_ORIGINS||'').split(',')].map(value=>value?.trim()).filter(Boolean);
+  if(!origin || !origins.includes(origin)) fail(403,'Origin not allowed.');
   const cors={'Access-Control-Allow-Origin':origin,'Vary':'Origin'};
   if(request.method==='OPTIONS') return new Response(null,{status:204,headers:{...cors,'Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'Content-Type'}});
   if(request.method!=='POST') return json({error:'Method not allowed.'},405,cors);
