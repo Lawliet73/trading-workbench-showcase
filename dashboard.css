@@ -51,3 +51,11 @@ body:has(.ai-panel:not([hidden])) .drawer{visibility:hidden;pointer-events:none}
 
 body:has(.drawer.on) .ai-launch{visibility:hidden}
 @media(max-width:1549px){body:has(.drawer.on),body:has(.ai-panel:not([hidden])){overflow:hidden}}
+
+/* Architecture is the overview's first-screen centerpiece. */
+.architecture-overview{margin:0 0 24px;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--panel)}
+.architecture-overview figcaption{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 18px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted)}
+.architecture-overview figcaption a{font-size:11px;white-space:nowrap;color:var(--accent)}
+.architecture-overview iframe{display:block;width:100%;height:clamp(360px,49vw,640px);min-height:0;border:0;border-radius:0}
+#tab-overview>.dashboard-summary{margin:24px 0}#tab-overview>.publication-notes{margin:24px 0}
+@media(max-width:600px){.architecture-overview figcaption{padding:12px;gap:8px;font-size:11px}.architecture-overview iframe{height:auto;aspect-ratio:1.7}header{padding-top:20px}main{padding-top:20px}}

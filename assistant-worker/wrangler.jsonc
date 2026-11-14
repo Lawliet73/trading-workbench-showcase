@@ -21,6 +21,7 @@
     "SCOPE": "public",
     "SITE_ORIGIN": "https://lawliet73.github.io",
     "ENABLED": "true",
-    "FREE_PLAN_CONFIRMED": "true"
+    "FREE_PLAN_CONFIRMED": "true",
+    "ADDITIONAL_SITE_ORIGINS": "http://localhost:8806,http://localhost:8807,http://127.0.0.1:8806,http://127.0.0.1:8807"
   }
 }

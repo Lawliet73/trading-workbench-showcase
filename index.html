@@ -150,7 +150,7 @@ try { const t = localStorage.getItem("fwmap-theme"); if (t) root.dataset.theme =
 $("#theme").onclick = () => { const cur = root.dataset.theme || "dark";
   root.dataset.theme = cur === "dark" ? "light" : "dark"; try { localStorage.setItem("fwmap-theme", root.dataset.theme); } catch(e) {} };
 
-$("#subtitle").innerHTML = `<b>Public snapshot of a personal learning project</b> (quantitative trading research and software engineering). Not investment advice. A navigational layer above the project's private documents, compiled ${esc(F.asOf)} by ${esc(F.author)}. Status comes from repository evidence; <b>implemented is not validated</b>, and nothing here is owner-approved unless the decision record says so.`;
+$("#subtitle").innerHTML = `<b>A personal quantitative research project</b> (quantitative trading research and software engineering). Not investment advice. A shared map of the project architecture and research evidence, compiled ${esc(F.asOf)} by ${esc(F.author)}. Status comes from repository evidence; <b>implemented is not validated</b>, and nothing here is owner-approved unless the decision record says so.`;
 $("#legend").innerHTML = order.map(pill).join("") + `<a class="note" href="#tab=about">Read status meanings and glossary</a>`;
 
 /* tabs + hash routing */
