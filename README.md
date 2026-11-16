@@ -1,4 +1,4 @@
-# Trading Workbench â€“ framework map
+# Trading Workbench / framework map
 
 **Live site:** https://lawliet73.github.io/trading-workbench-showcase/
 
