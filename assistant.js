@@ -1,5 +1,8 @@
 /* Shared map companion. No secrets or retrieved corpus live in this file. */
 (()=>{
+  // The parent page owns the assistant. Never duplicate an overlay inside
+  // embedded graphs or activate a cloud endpoint from a local preview.
+  if(window.self!==window.top||/^(localhost|127\.0\.0\.1)$/.test(location.hostname))return;
   const config=window.WORKBENCH_ASSISTANT||{};
   const el=(tag,attrs={},text='')=>{const n=document.createElement(tag);for(const [k,v]of Object.entries(attrs))n.setAttribute(k,v);n.textContent=text;return n;};
   const launcher=el('button',{class:'ai-launch',type:'button','aria-expanded':'false','aria-controls':'ai-panel'},'Ask the research assistant');
@@ -18,9 +21,10 @@
   const controls=el('div',{class:'ai-controls'});controls.append(send,clear);form.append(label,input,controls);
   const note=el('p',{class:'ai-note'},'AI explanations can be wrong. Check the sources. Questions are sent to Cloudflare; this chat stays in memory only.');
   panel.append(top,context,suggestions,messages,status,form,note);document.body.append(launcher,panel);
-  let history=[],controller,previousFocus;let component='',diagram='';
-  function refresh(){const route=new URLSearchParams(location.hash.slice(1));diagram=route.get('tab')==='views'?(route.get('v')||'A'):'';component=new URLSearchParams(location.hash.slice(1)).get('c')||'';const c=window.FW?.components.find(c=>c.id===component);const view=window.FW?.views.find(v=>v.id===diagram);context.textContent=c?'Selected: '+c.n:view?'Diagram: '+view.t:'Explore the research framework';suggestions.replaceChildren();
+  let history=[],controller,previousFocus;let component='',diagram='',record='',graphRecord='';
+  function refresh(){const route=new URLSearchParams(location.hash.slice(1));diagram=route.get('tab')==='views'?(route.get('v')||'A'):'';component=route.get('c')||'';record=route.get('k')||graphRecord;const c=window.FW?.components.find(c=>c.id===component);const view=window.FW?.views.find(v=>v.id===diagram);const selected=window.FW_KNOWLEDGE?.nodes?.find(n=>n.key===record);context.textContent=selected?'Selected: '+selected.title:c?'Selected: '+c.n:view?'Diagram: '+view.t:'Explore the research framework';suggestions.replaceChildren();
     for(const prompt of language.value==='de'?['Erkläre das mit einem Zahlenbeispiel.','Was ist implementiert, und was ist noch eine Hypothese?']:['Explain this with a numerical example.','What is implemented, and what remains a hypothesis?']){const b=el('button',{type:'button'},prompt);b.onclick=()=>{input.value=prompt;input.focus();};suggestions.append(b);}
+    const graphPanel=document.querySelector('#detail');if(record&&graphPanel&&!graphPanel.querySelector('.ai-explain')){const btn=el('button',{type:'button',class:'ai-explain'},'Explain selected record · AI');btn.onclick=()=>{open();input.value=language.value==='de'?'Erkläre den ausgewählten Knoten und seine Beziehungen anschaulich.':'Explain the selected graph node and its relationships intuitively.';};graphPanel.append(btn);}
     const drawer=document.querySelector('#drawer');if(c&&drawer&&!drawer.querySelector('.ai-explain')){const b=el('button',{type:'button',class:'ai-explain'},'Explain this · AI');b.onclick=()=>{open();input.value=language.value==='de'?'Erkläre diese Komponente und ihre Beziehungen.':'Explain this component and its relationships.';};drawer.querySelector('h2')?.after(b);}
   }
   function open(){previousFocus=document.activeElement;panel.hidden=false;launcher.setAttribute('aria-expanded','true');refresh();input.focus();if(!config.endpoint)status.textContent='Cloud assistant is awaiting setup. You can still explore every component and lesson.';}
@@ -28,6 +32,9 @@
   launcher.onclick=()=>panel.hidden?open():hide();close.onclick=hide;
   panel.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();hide();}});
   language.onchange=refresh;addEventListener('hashchange',()=>queueMicrotask(refresh));
+  addEventListener('twk:record-selected',event=>{graphRecord=event.detail?.key||'';refresh();});
+  // The knowledge explorer has its own independent detail panel.
+  const graphPanel=document.querySelector('#detail');if(graphPanel)new MutationObserver(refresh).observe(graphPanel,{childList:true});
   // The existing drawer is rerendered on component navigation; no coupling to its internal functions.
   const drawer=document.querySelector('#drawer');if(drawer)new MutationObserver(refresh).observe(drawer,{childList:true});
   clear.onclick=()=>{controller?.abort();history=[];messages.replaceChildren();status.textContent='';input.focus();};
@@ -35,7 +42,7 @@
   form.onsubmit=async e=>{e.preventDefault();if(send.disabled)return;refresh();if(!config.endpoint){status.textContent='Cloud assistant is awaiting setup.';return;}const question=input.value.trim();if(!question)return;
     const localController=new AbortController();controller=localController;const timer=setTimeout(()=>localController.abort(),90000);
     const requestHistory=history.slice(-8);while(new TextEncoder().encode(JSON.stringify(requestHistory)).length>14000)requestHistory.splice(0,2);bubble('user',question);input.value='';send.disabled=true;status.textContent=language.value==='de'?'Quellen werden geprüft …':'Checking sources …';
-    try{const r=await fetch(config.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},credentials:config.private?'same-origin':'omit',signal:localController.signal,body:JSON.stringify({question,history:requestHistory,component,diagram,language:language.value})});
+    try{const r=await fetch(config.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},credentials:config.private?'same-origin':'omit',signal:localController.signal,body:JSON.stringify({question,history:requestHistory,component,diagram,record,language:language.value})});
       let data;try{data=await r.json();}catch{throw Error('Assistant unavailable. Check your connection or sign in to the private site.');}if(!r.ok)throw Error(data.error||'Assistant unavailable.');if(controller!==localController||localController.signal.aborted)return;
       const n=bubble('assistant',data.answer);const refs=el('div',{class:'ai-sources'});
       for(const s of data.sources||[]){const text=`[${s.number}] ${s.title}`;if(typeof s.url==='string'&&(s.url.startsWith('#tab=')||s.url.startsWith('https://'))){const a=el('a',{href:s.url},text);if(s.url.startsWith('https://')){a.target='_blank';a.rel='noopener noreferrer';}refs.append(a);}else refs.append(el('span',{},text));}

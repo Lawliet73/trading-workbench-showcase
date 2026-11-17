@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Knowledge explorer · Trading Workbench</title><link rel="icon" href="data:,">
+<link rel="stylesheet" href="../dashboard.css">
+<link rel="stylesheet" href="../assistant.css">
+<style>
+/* Explorer chrome. Colours and type come from dashboard.css; nothing here adds a palette. */
+html,body{height:100%}body{margin:0;overflow:hidden}body:before{display:none}
+#stage{position:fixed;inset:0;display:block;width:100%;height:100%;touch-action:none;cursor:grab;outline:none}#stage.drag{cursor:grabbing}#stage.hit{cursor:pointer}
+.xp{position:fixed;z-index:3;background:color-mix(in srgb,var(--panel) 92%,transparent);border:1px solid var(--line);border-radius:var(--radius);font-size:12px;line-height:1.6;color:var(--ink)}
+#bar{top:12px;left:12px;right:12px;display:flex;gap:8px;align-items:center;padding:8px 10px;flex-wrap:wrap}
+#bar input[type=search]{flex:1 1 220px;min-width:0;font:inherit;font-size:12px;padding:7px 10px;border:1px solid var(--line);border-radius:4px;background:var(--bg);color:var(--ink)}
+.xb{font:inherit;font-size:11px;border:1px solid var(--line);background:var(--bg);color:var(--muted);border-radius:4px;padding:6px 9px;cursor:pointer;white-space:nowrap}
+.xb:hover{color:var(--ink);border-color:var(--accent)}.xs{font-size:11px;color:var(--muted);display:flex;gap:5px;align-items:center}.xs select{font:inherit;font-size:11px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:5px 6px}
+#detail details{margin:6px 0}#detail summary{cursor:pointer}.xb[aria-pressed=true]{color:var(--ink);border-color:var(--accent);box-shadow:inset 0 -2px var(--accent)}
+#hits{position:absolute;top:100%;left:10px;margin-top:4px;min-width:min(420px,90vw);max-height:50vh;overflow:auto;padding:4px;display:none}#hits.on{display:block}
+#hits button{display:block;width:100%;text-align:left;font:inherit;font-size:12px;border:0;background:none;color:var(--ink);padding:6px 8px;border-radius:3px;cursor:pointer}#hits button:hover,#hits button:focus{background:var(--hover)}#hits code{color:var(--accent);font-size:10px;margin-right:6px}
+#filters{top:64px;left:12px;width:250px;max-height:calc(100% - 150px);overflow:auto;padding:12px}#filters[hidden],#detail[hidden],#listview[hidden]{display:none}
+#filters h3,#detail h3{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500;margin:12px 0 6px}#filters h3:first-child{margin-top:0}
+#filters label{display:flex;gap:7px;align-items:center;padding:2px 0;cursor:pointer;font-size:12px}#filters label span.c{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums;font-size:11px}
+#filters .sw{width:9px;height:9px;border-radius:50%;flex:none}
+#detail{top:64px;right:12px;width:min(340px,calc(100% - 24px));max-height:calc(100% - 90px);overflow:auto;padding:14px}
+#detail h2{font-size:16px;font-weight:550;line-height:1.35;margin:6px 0 8px;letter-spacing:-.01em}#detail p{margin:0 0 8px;font-size:12px;line-height:1.7}#detail .m{color:var(--muted);font-size:11px}
+#detail .acts{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}#detail .nb{display:flex;flex-wrap:wrap;gap:5px}
+#detail .nb button{font:inherit;font-size:11px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:3px;padding:3px 7px;cursor:pointer;text-align:left}#detail .nb button.soft{border-style:dashed}#detail .nb button:hover{border-color:var(--accent)}
+#detail code{color:var(--accent);font-size:10px}
+#legend{left:12px;bottom:12px;padding:8px 12px;max-width:min(560px,calc(100% - 24px));display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11px;color:var(--muted)}
+#legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px}#legend .ln{display:inline-block;width:18px;border-top:1px solid var(--muted);margin-right:5px;vertical-align:3px}#legend .ln.d{border-top-style:dashed}
+#legend b{font-weight:500;color:var(--ink)}
+#listview{position:fixed;inset:64px 12px 12px 12px;z-index:2;overflow:auto;padding:16px}#listview h3{font-size:13px;font-weight:550;margin:16px 0 6px}#listview ul{margin:0;padding:0;list-style:none;columns:320px;column-gap:18px}
+#listview li{break-inside:avoid;margin:0 0 4px}#listview button{font:inherit;font-size:12px;border:0;background:none;color:var(--ink);cursor:pointer;text-align:left;padding:2px 0}#listview button:hover{color:var(--accent)}#listview code{color:var(--accent);font-size:10px;margin-right:6px}
+#graphhelp{bottom:12px;right:12px;max-width:300px;padding:9px 12px;color:var(--muted);z-index:4}
+#graphhelp[hidden]{display:none}
+#bar{gap:7px;z-index:5}
+#advanced-controls{position:absolute;right:0;top:calc(100% + 7px);display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap;padding:10px 13px;max-width:min(700px,calc(100vw - 24px));background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 8px 28px #0004}
+#advanced-controls[hidden]{display:none}
+#advanced-controls .xs{white-space:nowrap}
+#detail .tech-detail[hidden]{display:none!important}
+#detail .reader-tiers{margin:10px 0;border-top:1px solid var(--line)}
+#detail .reader-tiers details{margin:8px 0;padding:8px 0}
+#detail .reader-tiers summary{color:var(--ink);font-weight:600;font-size:12px}
+#fps{position:fixed;right:12px;bottom:12px;z-index:3;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media(max-width:760px){#bar{gap:5px;padding:7px}#bar input[type=search]{flex-basis:100%}#bar .xs{max-width:100%}#bar #sfocus{max-width:125px}#advanced-controls{left:0;right:0;justify-content:flex-start}#filters{top:120px;width:auto;right:12px;max-height:calc(100% - 235px)}#detail{top:auto;bottom:12px;left:12px;right:12px;width:auto;max-height:46%}#legend{display:none}}
+</style>
+</head>
+<body>
+<canvas id="stage" tabindex="0" role="application" aria-label="Knowledge graph. Drag to rotate, scroll to zoom, arrow keys rotate, plus and minus zoom, Enter selects the highlighted node. A list view of the same records is available in the toolbar." aria-describedby="summary"></canvas>
+<p id="summary" class="sr" role="status" aria-live="polite"></p>
+<div id="graphhelp" class="xp" aria-live="polite">3D overview · Use Explore to focus on a region. Drag to orbit, Shift + drag to pan, wheel to zoom. Click a node to inspect it. <button type="button" class="xb" id="bhidehelp" aria-label="Dismiss tip">×</button></div>
+<div id="bar" class="xp" role="toolbar" aria-label="Explorer controls">
+  <input id="q" type="search" placeholder="Search records by id or title" aria-label="Search records" autocomplete="off" aria-controls="hits">
+  <div id="hits" class="xp" role="listbox" aria-label="Matching records"></div>
+  <button class="xb" id="b3d" type="button" aria-pressed="true" title="Three-dimensional view">3D</button>
+  <button class="xb" id="b2d" type="button" aria-pressed="false" title="Flat view, no rotation">2D</button>
+  <button class="xb" id="blist" type="button" aria-pressed="false" title="The same records as a list">List</button>
+  <label class="xs">Explore <select id="sfocus" aria-label="Explore a knowledge region"><option value="all">All regions</option><option value="framework">Framework</option><option value="A">Track A · Foundations</option><option value="B">Track B · Research</option><option value="shared">Evidence</option><option value="decisions">Decisions</option></select></label>
+  <button class="xb" id="bfilters" type="button" aria-pressed="true" aria-controls="filters">Filters</button>
+  <button class="xb" id="badvanced" type="button" aria-expanded="false" aria-controls="advanced-controls">Options</button>
+  <button class="xb" id="breset" type="button" title="Clear the selection and reset the camera">Reset view</button>
+  <div id="advanced-controls" hidden aria-label="Advanced explorer controls">
+  <label class="xs">Show <select id="slevel" aria-label="How many records to show"><option value="overview">Overview</option><option value="standard">Main records</option><option value="all">Everything</option></select></label>
+  <label class="xs">Links <select id="srel" aria-label="Types of connections to draw"><option value="essential">Main relationships</option><option value="sources">Citations and evidence</option><option value="all">All connections</option></select></label>
+  <label class="xs">Colour <select id="scolour" aria-label="Colour nodes by"><option value="track">by track</option><option value="status">by status</option></select></label>
+  <label class="xs">Size <select id="ssize" aria-label="Size nodes by"><option value="role">by role</option><option value="links">by links</option><option value="priority">by research priority</option></select></label>
+  <button class="xb" id="blabels" type="button" aria-pressed="true" title="Show or hide labels">Labels</button>
+  <button class="xb" id="bmotion" type="button" aria-pressed="false" title="Slow rotation. Off when reduced motion is requested.">Motion</button>
+  </div>
+</div>
+<aside id="filters" class="xp" aria-label="Filters"></aside>
+<aside id="detail" class="xp" aria-label="Selected record" hidden></aside>
+<section id="listview" class="xp" aria-label="Records as a list" hidden></section>
+<div id="legend" class="xp" aria-label="Legend"></div>
+<div id="fps" aria-hidden="true"></div>
+<script src="../framework-data.js"></script>
+<script src="../learning-data.js"></script>
+<script src="../assistant-config.js"></script>
+<script src="../assistant.js"></script>
+<script src="core.js"></script>
+<script src="constellation.js"></script>
+<script src="explain-levels.js"></script>
+<script src="../reader-mode.js"></script>
+<script>
+/* The index is private and may be absent (public mirror, or before the first build). The explorer then draws the
+   graph it can derive from the two published map files alone. */
+(function(){ var s = document.createElement('script'); s.src = '../knowledge-data.js';
+  var go = function(){ var e = document.createElement('script'); e.src = 'explorer.js'; document.body.appendChild(e); };
+  var withContent = function(){ var c = document.createElement('script'); c.src = '../knowledge-content.js'; c.onload = go; c.onerror = go; document.body.appendChild(c); };
+  s.onload = withContent; s.onerror = go;
+  if (/(^|\.)github\.io$/i.test(location.hostname) && new URLSearchParams(location.search).get('knowledge') !== 'on') go(); else document.body.appendChild(s); })();
+</script>
+</body>
+</html>

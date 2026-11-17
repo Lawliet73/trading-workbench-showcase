@@ -91,6 +91,12 @@ dl{margin:8px 0}dt{font-weight:600;margin-top:12px}dd{margin:3px 0 12px;color:va
 .filters input,.filters select{max-width:100%;min-width:0}.grid,.split,.card{min-width:0}.comp,.item,td{overflow-wrap:anywhere}
 @media(max-width:600px){.drawer{padding:16px 18px 32px}.grid{grid-template-columns:1fr}table{font-size:13px}th,td{padding:6px 4px}.pill{white-space:normal}.filters input{width:100%}}
 @media(prefers-reduced-motion:reduce){.drawer{transition:none}}
+@media(max-width:620px){
+  /* The nested graph cannot provide reliable touch targets inside a narrow,
+     scrolled iframe. Offer the identical graph in a full-screen mobile view. */
+  #tab-graph iframe{display:none!important}
+  #tab-graph a[href^="knowledge/explorer.html"]{display:inline-flex;align-items:center;padding:11px 14px;margin:10px 0 15px;border:1px solid var(--accent);border-radius:6px;color:var(--ink);font-weight:600;text-decoration:none}
+}
 </style>
 <link rel="stylesheet" href="assistant.css">
 <link rel="stylesheet" href="dashboard.css">
@@ -104,19 +110,28 @@ dl{margin:8px 0}dt{font-weight:600;margin-top:12px}dd{margin:3px 0 12px;color:va
 </header>
 <nav role="tablist" id="tabs">
   <button role="tab" data-tab="overview">1 · Overview</button>
-  <button role="tab" data-tab="components">2 · Components</button>
-  <button role="tab" data-tab="views">3 · Diagrams</button>
-  <button role="tab" data-tab="decisions">4 · Open decisions &amp; gaps</button>
+  <button role="tab" data-tab="graph">2 · 3D Explorer</button>
+  <button role="tab" data-tab="components">3 · Components</button>
+  <button role="tab" data-tab="views">4 · Diagrams</button>
+  <button role="tab" data-tab="decisions">5 · Open decisions &amp; gaps</button>
   <button role="tab" data-tab="about">Legend &amp; sources</button>
 </nav>
 <main>
   <section class="tab" id="tab-overview"></section>
+  <section class="tab" id="tab-graph">
+    <h2>Explore the Workbench</h2>
+    <p class="note">The same 3D knowledge explorer is available to every reader. Public and CV editions include only approved information; the authenticated owner edition includes the private research and decision records. <a href="knowledge/explorer.html" target="_blank" rel="noopener">Open full screen</a>.</p>
+    <iframe id="public-explorer" title="3D Knowledge Explorer" src="knowledge/explorer.html?embed=1" loading="lazy"></iframe>
+  </section>
   <section class="tab" id="tab-components">
     <div class="filters">
-      <input id="search" type="search" placeholder="Search components" aria-label="Search components">
+      <input id="search" type="search" placeholder="Search by name, text or identifier" aria-label="Search components by name, text or identifier">
+      <select id="qsel" aria-label="Filter by framework question"><option value="">All questions</option></select>
       <select id="kind" aria-label="Filter by kind"><option value="">All kinds</option></select>
       <select id="life" aria-label="Filter by lifecycle"><option value="">All lifecycles</option></select>
-      <span id="chips"></span>
+      <details id="more" hidden><summary>More filters</summary><div id="morefilters"></div></details>
+      <span id="chips" role="group" aria-label="Filter by status"></span>
+      <div id="activefilters"></div>
       <span class="note" id="count" role="status" aria-live="polite"></span>
     </div>
     <div id="groups"></div>
@@ -158,7 +173,9 @@ function show(tab){ document.querySelectorAll("#tabs button").forEach(b => b.set
   document.querySelectorAll(".tab").forEach(s => s.classList.toggle("on", s.id === "tab-" + tab)); }
 document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => { location.hash = "tab=" + b.dataset.tab; });
 function route(){ const h = new URLSearchParams(location.hash.slice(1)); const tab = h.get("tab") || "overview";
-  show(["overview","components","views","decisions","about"].includes(tab) ? tab : "overview"); if (h.get("q")) { setQ(h.get("q")); } else if (tab === "components" && qFilter) { setQ(""); } if (h.get("c") && byId[h.get("c")]) open(h.get("c")); else { D.classList.remove("on"); D.setAttribute("aria-hidden","true"); } if (h.get("v")) pickView(h.get("v")); }
+  show(document.getElementById("tab-" + tab) ? tab : "overview"); if (h.get("q")) { setQ(h.get("q")); } else if (tab === "components" && qFilter) { setQ(""); } if (h.get("c") && byId[h.get("c")]) open(h.get("c")); else { D.classList.remove("on"); D.setAttribute("aria-hidden","true"); } if (h.get("v")) pickView(h.get("v"));
+  dispatchEvent(new CustomEvent("fw:route", {detail: {tab, params: h}})); }
+window.FW_ROUTE = route;
 addEventListener("hashchange", route);
 
 /* overview */
@@ -182,29 +199,59 @@ $("#tab-overview").innerHTML = `<div class="lanes">
 document.querySelectorAll(".q").forEach(el => { const go = () => { location.hash = "tab=components&q=" + el.dataset.q; };
   el.onclick = go; el.onkeydown = e => { if (e.key === "Enter") go(); }; });
 
-/* components */
+/* components: filters combine (AND). The search matches names, text and identifiers. A private knowledge layer
+   may register more facets through window.FW_FACETS = [{id, label, options:[{value,label,count}], test(c, value)}]
+   and more searchable text through window.FW_SEARCH_TEXT(c); without it the page works on the map data alone. */
 let active = new Set(order), qFilter = "";
+const facetValue = {};
+$("#qsel").innerHTML += F.questions.map(q => `<option value="${q.id}">${q.id} · ${esc(q.short)}</option>`).join("");
 $("#kind").innerHTML += Object.entries(F.kinds).map(([k,v]) => `<option value="${k}">${esc(v)}</option>`).join("");
 $("#life").innerHTML += F.lifecycles.map(l => `<option value="${l.id}">${esc(l.label)}</option>`).join("");
 $("#chips").innerHTML = order.map(s => `<button class="chip s-${s}" aria-pressed="true" data-s="${s}">${esc(F.statuses[s].label)}</button>`).join(" ");
-document.querySelectorAll(".chip").forEach(b => b.onclick = () => { const s = b.dataset.s;
+const allStatuses = () => { active = new Set(order); document.querySelectorAll("#chips .chip").forEach(b => b.setAttribute("aria-pressed", "true")); };
+document.querySelectorAll("#chips .chip").forEach(b => b.onclick = () => { const s = b.dataset.s;
   active.has(s) ? active.delete(s) : active.add(s); b.setAttribute("aria-pressed", active.has(s)); render(); });
 ["#search","#kind","#life"].forEach(s => $(s).oninput = render);
-function setQ(q){ qFilter = q; render(); }
-function render(){ const term = $("#search").value.toLowerCase(), kind = $("#kind").value, life = $("#life").value;
+const hashWith = fn => { const h = new URLSearchParams(location.hash.slice(1)); h.set("tab", "components"); fn(h); location.hash = h.toString(); };
+$("#qsel").oninput = () => hashWith(h => $("#qsel").value ? h.set("q", $("#qsel").value) : h.delete("q"));
+function setQ(q){ qFilter = q; $("#qsel").value = q; render(); }
+function resetFilters(){ $("#search").value = ""; $("#kind").value = ""; $("#life").value = ""; allStatuses();
+  for (const k in facetValue) delete facetValue[k]; renderFacets(); if (qFilter) hashWith(h => h.delete("q")); else render(); }
+function renderFacets(){ const facets = (window.FW_FACETS || []).filter(f => f.options.length > 1);
+  $("#more").hidden = !facets.length; if (!facets.length) return;
+  $("#more").querySelector("summary").textContent = "More filters (" + facets.length + ")";
+  $("#morefilters").innerHTML = facets.map(f => `<label><span>${esc(f.label)}</span><select data-facet="${esc(f.id)}"><option value="">Any</option>${
+    f.options.map(o => `<option value="${esc(o.value)}"${facetValue[f.id] === o.value ? " selected" : ""}>${esc(o.label)} (${o.count})</option>`).join("")}</select></label>`).join("") +
+    (window.FW_FACET_NOTE ? `<p class="note">${esc(window.FW_FACET_NOTE)}</p>` : "");
+  $("#morefilters").querySelectorAll("select").forEach(el => el.oninput = () => { el.value ? facetValue[el.dataset.facet] = el.value : delete facetValue[el.dataset.facet]; render(); }); }
+window.FW_RENDER_COMPONENTS = () => { renderFacets(); render(); };
+function render(){ const term = $("#search").value.trim().toLowerCase(), kind = $("#kind").value, life = $("#life").value;
+  const facets = (window.FW_FACETS || []).filter(f => facetValue[f.id]), more = window.FW_SEARCH_TEXT || (() => "");
+  const pills = [];
+  if (term) pills.push(['"' + term + '"', () => { $("#search").value = ""; }]);
+  if (qFilter) pills.push([qFilter + " " + qById[qFilter].short, () => hashWith(h => h.delete("q"))]);
+  if (kind) pills.push([F.kinds[kind], () => { $("#kind").value = ""; }]);
+  if (life) pills.push([F.lifecycles.find(l => l.id === life).label, () => { $("#life").value = ""; }]);
+  if (active.size < order.length) pills.push(["Status: " + (order.filter(s => active.has(s)).map(s => F.statuses[s].label).join(", ") || "none selected"), allStatuses]);
+  for (const f of facets) pills.push([f.label + ": " + (f.options.find(o => o.value === facetValue[f.id]) || {label: facetValue[f.id]}).label, () => { delete facetValue[f.id]; renderFacets(); }]);
   let shown = 0;
-  $("#groups").innerHTML = (qFilter ? `<p class="note">Showing ${qFilter} only. <a href="#tab=components" id="clearq">Show all questions</a></p>` : "") +
-  F.questions.filter(q => !qFilter || q.id === qFilter).filter(q => !life || q.life === life).map(q => {
-    const list = F.components.filter(c => c.q === q.id && active.has(c.s) && (!kind || c.k === kind) &&
-      (!term || (c.id + " " + c.n + " " + c.p + " " + c.evid + " " + L.lessons[c.id] + " " + JSON.stringify(L.depth[c.id] || []) + " " + JSON.stringify(c.deep || {})).toLowerCase().includes(term)))
+  const groups = F.questions.filter(q => !qFilter || q.id === qFilter).filter(q => !life || q.life === life).map(q => {
+    const list = F.components.filter(c => c.q === q.id && active.has(c.s) && (!kind || c.k === kind) && facets.every(f => f.test(c, facetValue[f.id])) &&
+      (!term || (c.id + " " + c.n + " " + c.p + " " + c.evid + " " + L.lessons[c.id] + " " + JSON.stringify(L.depth[c.id] || []) + " " + JSON.stringify(c.deep || {}) + " " + more(c)).toLowerCase().includes(term)))
       .sort((a,b) => order.indexOf(a.s) - order.indexOf(b.s));
     shown += list.length; if (!list.length) return "";
-    return `<div class="group"><h3>${q.id} · ${esc(q.title)}</h3><p>${esc(q.answer)}</p><div class="grid">` +
+    return `<div class="group"><h3>${q.id} · ${esc(q.title)} <span class="groupcount">${list.length}</span></h3><p>${esc(q.answer)}</p><div class="grid">` +
       list.map(c => `<div class="card comp" tabindex="0" data-c="${c.id}"><div class="top">${pill(c.s)}<span class="kind">${esc(F.kinds[c.k])}</span><span class="kind">· explanation${L.depth[c.id] || c.deep ? ' + technical notes' : ''}</span></div>
-      <span class="nm">${esc(c.n)}</span><span class="pp">${esc(c.p)}</span></div>`).join("") + `</div></div>`; }).join("");
-  $("#count").textContent = shown + " of " + F.components.length + " components" + (shown ? "" : " — no matches; clear search or enable more filters");
-  document.querySelectorAll(".comp").forEach(el => { const go = () => openHash(el.dataset.c); el.onclick = go; el.onkeydown = e => { if (e.key === "Enter") go(); }; });
-  const cq = $("#clearq"); if (cq) cq.onclick = () => { setQ(""); };
+      <span class="nm">${esc(c.n)}</span><span class="pp">${esc(c.p)}</span>${window.FW_CARD_EXTRA ? window.FW_CARD_EXTRA(c) : ""}</div>`).join("") + `</div></div>`; }).join("");
+  const extra = window.FW_EXTRA_GROUPS ? window.FW_EXTRA_GROUPS({term, kind, life, q: qFilter, facets: Object.assign({}, facetValue), statusFiltered: active.size < order.length}) : {html: "", shown: 0, total: 0};
+  $("#groups").innerHTML = groups + extra.html + (shown + extra.shown ? "" :
+    `<div class="card empty"><b>No component matches these filters.</b><p class="note">Remove one of the active filters above, or reset them all.</p><button class="chip" type="button" id="emptyreset">Reset filters</button></div>`);
+  $("#activefilters").innerHTML = pills.length ? `<span class="note">Active filters</span> ` + pills.map((p,i) => `<button class="chip pillx" type="button" data-i="${i}" aria-label="Remove filter: ${esc(p[0])}">${esc(p[0])} <span aria-hidden="true">✕</span></button>`).join(" ") +
+    ` <button class="chip resetall" type="button" id="resetall">Reset all</button>` : "";
+  document.querySelectorAll("#activefilters .pillx").forEach(b => b.onclick = () => { pills[+b.dataset.i][1](); render(); });
+  for (const id of ["#resetall", "#emptyreset"]) { const el = $(id); if (el) el.onclick = resetFilters; }
+  $("#count").textContent = shown + " of " + F.components.length + " components" + (extra.total ? " · " + extra.shown + " of " + extra.total + " proposed target components" : "");
+  document.querySelectorAll("#groups .comp[data-c]").forEach(el => { const go = () => openHash(el.dataset.c); el.onclick = go; el.onkeydown = e => { if (e.key === "Enter") go(); }; });
 }
 function openHash(id){ const h = new URLSearchParams(location.hash.slice(1)); h.set("c", id); location.hash = h.toString(); }
 
@@ -222,18 +269,19 @@ function open(id){ const c = byId[id]; if (!c) return; const d = c.deep || {};
   D.innerHTML = `<button class="close" id="dclose">Close ✕</button>
     <div class="top">${pill(c.s)} <span class="kind">${esc(F.kinds[c.k])} · ${c.q} ${esc(qById[c.q].short)}</span></div>
     <h2 id="detail-title">${esc(c.n)}</h2>
-    <p class="note">Level 2 · Understand the component</p>
-    <h3>Purpose and reasoning</h3><p>${esc(L.lessons[id])}</p>
-    <h3>Evidence and status</h3><p><b>${esc(F.statuses[c.s].label)}.</b> ${esc(F.statuses[c.s].hint)}</p><p>${esc(c.evid)}</p>
-    <h3>How it connects</h3>${d.integration ? `<p>${esc(d.integration)}</p>` : ""}
+    <div class="reader-quick"><h3>1 · Quick reminder</h3><p>${esc(c.p || c.n)}</p></div>
+    <details class="reader-depth"><summary>2 · Explain it from the beginning</summary>
+    <h3>Purpose and reasoning</h3><p>${esc(L.lessons[id] || c.p)}</p><small class="reader-source">AI-generated project explanation · source verification pending</small>
+    <h3>Evidence and status</h3><p><b>${esc(F.statuses[c.s].label)}.</b> ${esc(F.statuses[c.s].hint)}</p><p>${esc(c.evid)}</p></details>
+    <details class="reader-depth technical-only"><summary>Connections and implementation references</summary><h3>How it connects</h3>${d.integration ? `<p>${esc(d.integration)}</p>` : ""}
     <p class="note">Needs information or capability from</p>${rel(c.deps)}<p class="note" style="margin-top:10px">Supplies or supports</p>${rel(down)}
-    <p class="note">These are the map's recorded dependencies, not new requirements or proof of implemented interfaces.</p>
-    ${deep || c.deep ? `<details class="lesson"><summary>Level 3 · Technical reasoning, examples and limitations</summary>
+    <p class="note">These are recorded dependencies, not proof of implemented interfaces.</p></details>
+    ${deep || c.deep ? `<details class="reader-depth"><summary>3 · Application and deeper insights</summary>
     ${deep ? `<h3>${esc(deep[0])}</h3><p>${esc(deep[1])}</p><p class="note">Numerical examples are illustrative unless explicitly attributed to a recorded result.</p>` : ""}
     ${sec("Intuition in the source", d.intuition)}${sec("Recorded mechanism", d.mechanism)}${sec("Inputs and outputs", d.io)}${sec("Contribution", d.value)}${sec("Limitations", d.limits)}${sec("Alternatives in the record", d.alt)}</details>` : ""}
     ${terms.length ? `<details class="lesson"><summary>Terms used here (${terms.length})</summary><dl>${terms.map(([t,v])=>`<dt>${esc(t)}</dt><dd>${esc(v)}</dd>`).join("")}</dl></details>` : ""}
-    ${gaps.length ? `<h3>Related gaps (existing structural assessment)</h3>` + gaps.map(g => `<p><span class="tag">${g.id}</span> ${esc(g.t)}</p>`).join("") : ""}
-    <h3>Check the sources</h3><p>${c.src.map(srcLink).join(" · ")}</p>
+    ${gaps.length ? `<details class="technical-only"><summary>Related technical gaps</summary>` + gaps.map(g => `<p><span class="tag">${g.id}</span> ${esc(g.t)}</p>`).join("") + `</details>` : ""}
+    <details class="technical-only"><summary>Record source references</summary><p>${c.src.map(srcLink).join(" · ")}</p></details>
     <p class="note">The lesson explains the linked repository record; it does not add an approval or a measured result. <a href="#tab=about">Full glossary and source guide</a></p>`;
   D.classList.add("on"); D.setAttribute("aria-hidden","false"); D.setAttribute("aria-labelledby","detail-title");
   $("#dclose").onclick = closeD; D.querySelectorAll(".rel button").forEach(b => b.onclick = () => openHash(b.dataset.c)); D.scrollTop = 0; $("#dclose").focus({preventScroll:true}); }
@@ -280,8 +328,41 @@ $("#tab-about").innerHTML += `<div class="card" style="margin-top:16px"><h2>Glos
 render(); route();
 })();
 </script>
+<script src="overview-guide.js"></script>
 <script src="assistant-config.js"></script>
+<script src="reader-mode.js"></script>
 <script src="assistant.js"></script>
 <script src="dashboard.js"></script>
+<script>
+// Keep the public/shared embedded Explorer in the same theme as the host.
+// The owner knowledge layer upgrades this iframe and handles its own theme.
+(function(){
+ const frame=document.getElementById('public-explorer');
+ if(!frame)return;
+ const sync=()=>{if(frame.isConnected&&frame.contentWindow)frame.contentWindow.postMessage({
+   type:'twk:theme',theme:document.documentElement.dataset.theme==='light'?'light':'dark'
+ },location.origin);};
+ frame.addEventListener('load',sync);
+ new MutationObserver(sync).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+ // Full-screen links retain the current reader theme on all three scopes.
+ document.addEventListener('click',e=>{
+   const a=e.target.closest&&e.target.closest('a[href^="knowledge/explorer.html"]');
+   if(a){const u=new URL(a.href,location.href);u.searchParams.set('theme',document.documentElement.dataset.theme==='light'?'light':'dark');a.href=u.toString();}
+ },true);
+ sync();
+})();
+</script>
+<script>
+/* Private knowledge layer: generated index plus its views. These files are never published (the publisher
+   copies an allow-list), so the public mirror skips the request; anywhere else a missing file is ignored
+   and the map works as before. ?knowledge=off disables it, ?knowledge=on forces the attempt. */
+(function(){ const want = new URLSearchParams(location.search).get("knowledge");
+  if (want === "off" || (want !== "on" && /(^|\.)github\.io$/i.test(location.hostname))) return;
+  const css = document.createElement("link"); css.rel = "stylesheet"; css.href = "knowledge/knowledge.css"; document.head.append(css);
+  window.TWK_DEFER_ROUTE = true; // the last file routes once everything is loaded
+  const files = ["knowledge-data.js", "knowledge-content.js", "knowledge/core.js", "knowledge/explain-levels.js", "knowledge/teach.js", "knowledge/knowledge.js", "knowledge/learn.js", "knowledge/architecture.js"];
+  (function next(i){ if (i >= files.length) return; const el = document.createElement("script"); el.src = files[i]; el.onload = () => next(i + 1); el.onerror = () => { if (i === 0) { window.TWK_DEFER_ROUTE = false; return; } next(i + 1); }; document.body.append(el); })(0);
+})();
+</script>
 </body>
 </html>
