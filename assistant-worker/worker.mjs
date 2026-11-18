@@ -36,6 +36,7 @@ export async function handle(request,env,ctx) {
   try {
     if(env.ENABLED!=='true'||env.FREE_PLAN_CONFIRMED!=='true') fail(503,'Assistant is not enabled yet. The map remains available.');
     const b=validateChat(await body(request,22000));
+    const wantsSources=/(?:sources?|citations?|references?|evidence|papers?|quellen|belege|nachweise|literatur|studien)\b/i.test(b.question);
     const day=new Date().toISOString().slice(0,10);
     const ip=request.headers.get('CF-Connecting-IP');if(!ip) fail(503,'Client identity unavailable.');
     const identity=(await digest(day+':'+ip)).slice(0,32);
@@ -51,9 +52,10 @@ export async function handle(request,env,ctx) {
     let answer;
     try { answer=await env.AI.run(MODEL,{messages,max_tokens:MAX_OUTPUT_TOKENS,temperature:0.3}); }
     catch {fail(503,'AI quota or service temporarily unavailable. Please try later.');}
-    const output=normalizeCitations(visibleAnswer(answer),sources);
+    const cited=normalizeCitations(visibleAnswer(answer),sources);
+    const output=wantsSources?cited:cited.replace(/\s*\[\d+\]/g,'').trim();
     if(!output) fail(503,'AI response unavailable. Please try again.');
-    return json({answer:output,sources:citedSources(output,sources),scope:'public',knowledgeVersion:knowledge?.version||null,truncated:answer?.choices?.[0]?.finish_reason==='length'},200,cors);
+    return json({answer:output,sources:wantsSources?citedSources(output,sources):[],scope:'public',knowledgeVersion:knowledge?.version||null,truncated:answer?.choices?.[0]?.finish_reason==='length'},200,cors);
   } catch(e){return json({error:e.status?e.message:'Assistant temporarily unavailable.'},e.status||503,cors);}
 }
 export default {async fetch(request,env,ctx){try{return await handle(request,env,ctx);}catch(e){return json({error:e.status?e.message:'Service temporarily unavailable.'},e.status||503);}}};
