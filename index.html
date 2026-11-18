@@ -253,7 +253,7 @@ function render(){ const term = $("#search").value.trim().toLowerCase(), kind = 
   $("#count").textContent = shown + " of " + F.components.length + " components" + (extra.total ? " · " + extra.shown + " of " + extra.total + " proposed target components" : "");
   document.querySelectorAll("#groups .comp[data-c]").forEach(el => { const go = () => openHash(el.dataset.c); el.onclick = go; el.onkeydown = e => { if (e.key === "Enter") go(); }; });
 }
-function openHash(id){ const h = new URLSearchParams(location.hash.slice(1)); h.set("c", id); location.hash = h.toString(); }
+function openHash(id){ const h = new URLSearchParams(location.hash.slice(1)); h.set("tab", "components"); h.set("c", id); location.hash = h.toString(); }
 
 /* Levels 2 and 3: preserve source detail, expand only on request. */
 const D = $("#drawer");
@@ -333,6 +333,8 @@ render(); route();
 <script src="reader-mode.js"></script>
 <script src="assistant.js"></script>
 <script src="dashboard.js"></script>
+<script src="reader-library.js"></script>
+<script src="reader-presentation.js"></script>
 <script>
 // Keep the public/shared embedded Explorer in the same theme as the host.
 // The owner knowledge layer upgrades this iframe and handles its own theme.

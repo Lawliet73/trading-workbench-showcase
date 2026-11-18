@@ -39,7 +39,23 @@ const DETAILS={
  validate:['Validation','Checks whether an attractive historical result survives tests outside the conditions in which it was discovered.','A rule selected from many guesses needs stronger evidence than one registered in advance.'],
  panel:['Daily panel','A structured table with one row per eligible security and date and the information available then.','A present-day list of surviving companies can make the past look easier than it was. The panel should reconstruct historical eligibility.'],
  gate:['Risk gate','A proposed checkpoint that may reduce or reject a trade.','A €10,000 requested position may need to be reduced if the portfolio’s exposure allowance is only €2,000.'],
- alpaca:['Alpaca SIP','A market-data provider supplying time-stamped price observations.','Five-minute and daily bars summarize different time intervals; neither contains information from the future.']
+ alpaca:['Market price data','Earlier prices and trading activity that models can use as observations.','If a stock closed at €50 yesterday, the model can use that value today, but not tomorrow’s price.'],
+ edgar:['Company announcements','Company reports and other dated events that might help explain why a price changed.','A profit report released after the market closes can only influence later decisions, not a trade made that morning.'],
+ french:['Market factors','Simple comparisons that help distinguish a strategy’s return from broad market movements.','If an investing rule gained 8% while the whole market gained 7%, the rule may have added much less value than 8% suggests.'],
+ trials:['Recorded experiments','Keeps the trading-rule variations that were tried, including poor results.','If 30 rule settings are tested, keeping only the best one would give a misleading picture.'],
+ ideas:['Research ideas','A place to describe observations worth investigating, before calling them successful strategies.','An idea that company shares sometimes move slowly after earnings still needs a clearly defined test.'],
+ strategy:['Trading rules','Rules that turn information into a possible buy, sell or hold decision.','A rule might buy only after a stock rises above its recent average; this does not establish that it is profitable.'],
+ ladder:['Evidence checks','A sequence of increasingly demanding tests that tries to separate genuine effects from lucky results.','A rule that worked over one year is tested on a different period before anyone treats it as reliable.'],
+ bench:['Compare against a baseline','Shows whether an idea performs differently from a simple alternative once uncertainty and costs are considered.','A stock strategy earns 6%, but a simple index earns 8% over the same period: the headline profit alone is not enough.'],
+ hyp:['Testable predictions','Records what should happen and how we would know whether the prediction was wrong.','Before looking at future earnings days, state how long a possible price reaction should last.'],
+ approval:['Human approval','A planned decision point where evidence and risks are reviewed before any idea could progress.','Even a good historical result is not permission to trade automatically.'],
+ replay:['Test the real rules without real orders','A proposed check that runs realistic trade decisions through the same risk rules but sends orders to a simulator.','If a strategy requests 100 shares and the risk limit permits only 20, the simulation should obey the same 20-share limit.'],
+ scanner:['Find a manageable set of candidates','A planned way to narrow a large market to the securities that meet basic eligibility rules.','Out of 3,000 stocks, a scanner might flag 40 for closer investigation; none is automatically bought.'],
+ select:['Choose among possible signals','A planned method for deciding which tested strategy, if any, may be considered today.','Two models disagree on the same stock. The selection rule must define whether to prefer one, combine them or do nothing.'],
+ risk:['Risk limits','A proposed checkpoint that can limit the size of a trade or reject it.','A model wants to buy €5,000 of shares but the allowed exposure is €1,000; the order must shrink or be refused.'],
+ exec:['Place and record orders','The planned step that turns an approved trade request into actual broker instructions and records what was filled.','An order requests 10 shares; only 6 fill. The recorded position must show 6, not 10.'],
+ broker:['Simulated brokerage','A paper-trading environment that responds like a broker without committing actual money.','A practice order buys hypothetical shares; its reported fill still needs checking against realistic trading assumptions.'],
+ monitor:['Learn from outcomes','A proposed feedback step that compares what was intended with what actually happened.','If orders consistently fill at worse prices than a test predicted, the next research review should investigate that difference.']
 };
 const css=document.createElement('style');
 css.textContent=':root:not([data-technical="on"]) #focus-chip{display:none!important}'+
@@ -56,7 +72,7 @@ css.textContent=':root:not([data-technical="on"]) #focus-chip{display:none!impor
 '@media(prefers-reduced-motion:reduce){svg [data-edge-id].twk-active{animation:none!important}}';
 document.head.append(css);
 const panel=document.createElement('aside');panel.id='twk-guide';panel.hidden=true;panel.setAttribute('role','region');panel.setAttribute('aria-label','Diagram explanation');
-panel.innerHTML='<h3 id="twk-step-title">Understand this diagram</h3><p id="twk-step-quick"></p><details id="twk-step-deep"><summary>2 · Explain from the beginning</summary><p id="twk-step-detail"></p></details><details id="twk-step-expert" hidden><summary>3 · Practical insights</summary><p id="twk-step-advanced"></p></details><small id="twk-step-source">Illustrative educational walkthrough; technical data is in the underlying diagram.</small><div class="twk-controls"><button type="button" id="twk-prev">Previous</button><span id="twk-count"></span><button type="button" id="twk-next">Next</button><button type="button" id="twk-play">Play</button><button type="button" id="twk-close">×</button></div>';
+panel.innerHTML='<h3 id="twk-step-title">Understand this diagram</h3><p id="twk-step-quick"></p><details id="twk-step-deep"><summary>2 · Explain from the beginning</summary><p id="twk-step-detail"></p></details><details id="twk-step-expert" hidden><summary>3 · Practical insights</summary><p id="twk-step-advanced"></p></details><small id="twk-step-source">Illustrative educational walkthrough; technical data is in the underlying diagram.</small><button type="button" id="twk-ask-ai">Explain this step with AI</button><div class="twk-controls"><button type="button" id="twk-prev">Previous</button><span id="twk-count"></span><button type="button" id="twk-next">Next</button><button type="button" id="twk-play">Play</button><button type="button" id="twk-close">×</button></div>';
 document.body.append(panel);
 if(window.TWK_READER&&window.TWK_READER.owner){
  const toggle=document.createElement('button');toggle.type='button';toggle.textContent='Technical details: off';
@@ -82,6 +98,16 @@ function show(data,index){
  doc.getElementById('twk-prev').disabled=index<=0;doc.getElementById('twk-next').disabled=index<0||index>=STORIES.length-1;
 }
 function goto(i){if(!STORIES.length)return;step=(i+STORIES.length)%STORIES.length;show(STORIES[step],step);}
+doc.getElementById('twk-ask-ai').onclick=()=>{
+ const title=doc.getElementById('twk-step-title')?.textContent||'this diagram step';
+ const quick=doc.getElementById('twk-step-quick')?.textContent||'';
+ const message={type:'twk:ask-assistant',topic:title,summary:quick};
+ if(window.parent!==window)window.parent.postMessage(message,location.origin);
+ else {
+   const back=doc.createElement('a');back.href='../index.html#tab=views';back.textContent='Open the Workbench assistant';
+   back.target='_blank';back.rel='noopener';panel.append(back);
+ }
+};
 doc.getElementById('twk-prev').onclick=()=>{stop();goto(step-1);};
 doc.getElementById('twk-next').onclick=()=>{stop();goto(step+1);};
 doc.getElementById('twk-close').onclick=()=>{stop();clear();panel.hidden=true;reveal.hidden=false;};
