@@ -100,6 +100,7 @@ dl{margin:8px 0}dt{font-weight:600;margin-top:12px}dd{margin:3px 0 12px;color:va
 </style>
 <link rel="stylesheet" href="assistant.css">
 <link rel="stylesheet" href="dashboard.css">
+<link rel="stylesheet" href="knowledge/knowledge.css">
 </head>
 <body>
 <header>
@@ -333,34 +334,17 @@ render(); route();
 <script src="reader-mode.js"></script>
 <script src="assistant.js"></script>
 <script src="dashboard.js"></script>
+<script src="education-outline.js"></script>
+<script src="knowledge/graph-shell.js"></script>
 <script src="reader-library.js"></script>
 <script src="reader-presentation.js"></script>
-<script>
-// Keep the public/shared embedded Explorer in the same theme as the host.
-// The owner knowledge layer upgrades this iframe and handles its own theme.
-(function(){
- const frame=document.getElementById('public-explorer');
- if(!frame)return;
- const sync=()=>{if(frame.isConnected&&frame.contentWindow)frame.contentWindow.postMessage({
-   type:'twk:theme',theme:document.documentElement.dataset.theme==='light'?'light':'dark'
- },location.origin);};
- frame.addEventListener('load',sync);
- new MutationObserver(sync).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
- // Full-screen links retain the current reader theme on all three scopes.
- document.addEventListener('click',e=>{
-   const a=e.target.closest&&e.target.closest('a[href^="knowledge/explorer.html"]');
-   if(a){const u=new URL(a.href,location.href);u.searchParams.set('theme',document.documentElement.dataset.theme==='light'?'light':'dark');a.href=u.toString();}
- },true);
- sync();
-})();
-</script>
+<script src="knowledge/reader-pages.js"></script>
 <script>
 /* Private knowledge layer: generated index plus its views. These files are never published (the publisher
    copies an allow-list), so the public mirror skips the request; anywhere else a missing file is ignored
    and the map works as before. ?knowledge=off disables it, ?knowledge=on forces the attempt. */
 (function(){ const want = new URLSearchParams(location.search).get("knowledge");
   if (want === "off" || (want !== "on" && /(^|\.)github\.io$/i.test(location.hostname))) return;
-  const css = document.createElement("link"); css.rel = "stylesheet"; css.href = "knowledge/knowledge.css"; document.head.append(css);
   window.TWK_DEFER_ROUTE = true; // the last file routes once everything is loaded
   const files = ["knowledge-data.js", "knowledge-content.js", "knowledge/core.js", "knowledge/explain-levels.js", "knowledge/teach.js", "knowledge/knowledge.js", "knowledge/learn.js", "knowledge/architecture.js"];
   (function next(i){ if (i >= files.length) return; const el = document.createElement("script"); el.src = files[i]; el.onload = () => next(i + 1); el.onerror = () => { if (i === 0) { window.TWK_DEFER_ROUTE = false; return; } next(i + 1); }; document.body.append(el); })(0);

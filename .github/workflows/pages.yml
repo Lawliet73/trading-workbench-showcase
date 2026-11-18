@@ -25,11 +25,11 @@ jobs:
       - run: node scripts/build-knowledge.mjs .
       - run: |
           mkdir _site
-          cp index.html framework-data.js learning-data.js assistant.js assistant.css assistant-config.js dashboard.css dashboard.js diagram-theme.css diagram-guide.js overview-guide.js reader-mode.js reader-library.js reader-presentation.js knowledge.json .nojekyll _site/
+          cp index.html framework-data.js learning-data.js assistant.js assistant.css assistant-config.js dashboard.css dashboard.js diagram-theme.css diagram-guide.js overview-guide.js reader-mode.js reader-library.js reader-presentation.js education-outline.js knowledge.json .nojekyll _site/
           cp -r views _site/views
           mkdir -p _site/knowledge
-          cp knowledge/explorer.html knowledge/explorer.js knowledge/core.js knowledge/constellation.js knowledge/explain-levels.js _site/knowledge/
-          test -s _site/knowledge/explorer.html && test -s _site/diagram-guide.js && test -s _site/reader-library.js && test -s _site/reader-presentation.js
+          cp knowledge/explorer.html knowledge/explorer.js knowledge/core.js knowledge/constellation.js knowledge/explain-levels.js knowledge/knowledge.css knowledge/graph-shell.js knowledge/reader-pages.js _site/knowledge/
+          test -s _site/knowledge/explorer.html && test -s _site/knowledge/graph-shell.js && test -s _site/knowledge/reader-pages.js && test -s _site/education-outline.js && test -s _site/diagram-guide.js && test -s _site/reader-library.js && test -s _site/reader-presentation.js
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

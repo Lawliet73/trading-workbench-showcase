@@ -79,18 +79,29 @@ html,body{height:100%}body{margin:0;overflow:hidden}body:before{display:none}
 <script src="../learning-data.js"></script>
 <script src="../assistant-config.js"></script>
 <script src="../assistant.js"></script>
+<script src="../education-outline.js"></script>
 <script src="core.js"></script>
 <script src="constellation.js"></script>
 <script src="explain-levels.js"></script>
 <script src="../reader-mode.js"></script>
 <script>
-/* The index is private and may be absent (public mirror, or before the first build). The explorer then draws the
-   graph it can derive from the two published map files alone. */
-(function(){ var s = document.createElement('script'); s.src = '../knowledge-data.js';
-  var go = function(){ var e = document.createElement('script'); e.src = 'explorer.js'; document.body.appendChild(e); };
-  var withContent = function(){ var c = document.createElement('script'); c.src = '../knowledge-content.js'; c.onload = go; c.onerror = go; document.body.appendChild(c); };
-  s.onload = withContent; s.onerror = go;
-  if (/(^|\.)github\.io$/i.test(location.hostname) && new URLSearchParams(location.search).get('knowledge') !== 'on') go(); else document.body.appendChild(s); })();
+/* Same renderer at every level: public-approved foundation, optional shared
+   curriculum, full private index only when authenticated by the Worker. */
+(function(){
+ const run=()=>{
+  const data=document.createElement('script');data.src='../knowledge-data.js';
+  const startViewer=()=>{const v=document.createElement('script');v.src='explorer.js';document.body.appendChild(v);};
+  const withOwnerContent=()=>{const c=document.createElement('script');c.src='../knowledge-content.js';
+   c.onload=startViewer;c.onerror=startViewer;document.body.appendChild(c);};
+  data.onload=withOwnerContent;data.onerror=startViewer;
+  if(/(^|\.)github\.io$/i.test(location.hostname)&&new URLSearchParams(location.search).get('knowledge')!=='on')startViewer();
+  else document.body.appendChild(data);
+ };
+ if(window.WORKBENCH_ASSISTANT?.scope==='shared'){
+   const extra=document.createElement('script');extra.src='shared-education-graph.js';
+   extra.onload=run;extra.onerror=run;document.body.appendChild(extra);
+ }else run();
+})();
 </script>
 </body>
 </html>

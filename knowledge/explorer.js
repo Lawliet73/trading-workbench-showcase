@@ -9,7 +9,7 @@
   const C = window.TWK, F = window.FW, qs = new URLSearchParams(location.search);
   const $ = s => document.querySelector(s), esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
   let G = window.FW_KNOWLEDGE, scope = 'index';
-  if (!G) { const g = C.frameworkGraph(F, window.FW_LEARNING); G = {nodes: g.nodes, edges: g.edges}; scope = 'public map only'; }
+  if (!G) { const g = C.frameworkGraph(F, window.FW_LEARNING); G = C.readerGraph(g, window.TWK_EDUCATION, window.TWK_SHARED_EDUCATION); scope = 'public map only'; }
   const stress = +qs.get('stress') || 0;
   if (stress) { // synthetic graph for performance checks: ?stress=3000
     const nodes = [], edges = [], h = C.hash32;
@@ -54,7 +54,7 @@
   const SLABEL = {built: 'implemented / exists / studied', planned: 'planned / partly studied', proposed: 'proposed, not approved', candidate: 'research candidate, untested', open: 'open decision / not yet studied', rejected: 'rejected, superseded or closed', other: 'no implementation status'};
   const statusOf = nd => { const a = nd.axes || {}, ap = (a.approval || [''])[0], rec = [].concat((a.record || [''])[0]);
     if (nd.type === 'component') return a.impl[0]; if (nd.type === 'target') return a.impl[0] === 'exists' ? 'built' : 'proposed';
-    if (nd.type === 'entry' || nd.type === 'variant') return 'candidate'; if (nd.type === 'concept') return /complete/.test(a.edu[0]) ? 'built' : /partial/.test(a.edu[0]) ? 'planned' : 'open';
+    if (nd.type === 'entry' || nd.type === 'variant') return 'candidate'; if (nd.type === 'concept') return !a.edu ? 'other' : /complete/.test(a.edu[0]) ? 'built' : /partial/.test(a.edu[0]) ? 'planned' : 'open';
     if (['milestone', 'log-proposal', 'proposal', 'gap'].includes(nd.type)) return 'proposed'; if (nd.type === 'open-decision' || /awaiting owner/.test(ap)) return 'open';
     if (ap === 'superseded' || rec.includes('closed') || (nd.type === 'lead' && rec[0] === 'rejected')) return 'rejected'; if (rec.includes('IMPLEMENTED')) return 'built'; if (rec.includes('DECIDED')) return 'planned'; return 'other'; };
   status = nodes.map(statusOf);
@@ -231,7 +231,7 @@
       <div class="technical-only">${[...groups].sort((a, b) => a[0].localeCompare(b[0])).map(([label, items]) => `<h3 title="${esc(C.RELATIONS[items[0].edge.rel].text)}">${esc(label)} (${items.length})</h3><p class="m" style="margin:-4px 0 6px">${esc(C.RELATIONS[items[0].edge.rel].text)}</p><div class="nb">${items.slice(0, 12).map(x => `<button type="button" class="${C.SOURCE_DERIVED[x.edge.basis] ? '' : 'soft'}" data-i="${at.get(x.node.key)}" title="${esc(C.BASIS[x.edge.basis].label)}"><code>${esc(x.node.id)}</code> ${esc(C.clip(x.node.title, 30))}</button>`).join('')}${items.length > 12 ? `<span class="m">+${items.length - 12} more in “Open details”</span>` : ''}</div>`).join('') || '<p class="m">No link is recorded for this record.</p>'}
       </div><details class="technical-only"><summary class="m">Identifier and record source</summary><p class="m"><code>${esc(nd.id)}</code></p><p class="m">${nd.src.map(s => esc(s.path) + ' · ' + esc(s.at) + (s.ref ? ' · on ' + esc(s.ref) : '')).join('<br>')}</p></details><p class="m technical-only">Dashed buttons are inferred, derived or proposed links.</p>`;
     $('#dx').onclick = () => select(-1); $('#dc').onclick = () => select(sel, true);
-    $('#do').onclick = () => { if (parent !== window) parent.postMessage({type: 'twk:open', key: nd.key}, '*'); else location.href = '../index.html#' + (nd.type === 'component' ? 'tab=components&c=' + encodeURIComponent(nd.id) : 'tab=graph&k=' + encodeURIComponent(nd.key)); };
+    $('#do').onclick = () => { if (parent !== window) parent.postMessage({type: 'twk:open', key: nd.key, link: nd.link||''}, location.origin); else location.href = '../index.html#' + (nd.type === 'component' ? 'tab=components&c=' + encodeURIComponent(nd.id) : 'tab=graph&k=' + encodeURIComponent(nd.key)); };
     box.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { hlMode = b.dataset.m; highlight(); detail(); dirty = true; });
     box.querySelectorAll('[data-i]').forEach(b => b.onclick = () => select(+b.dataset.i, true));
   }

@@ -192,6 +192,46 @@
     return { nodes, edges, lifeLabel };
   }
 
+  /* ---- one public-safe educational graph, enriched only by approved content ------------------------- */
+  // The owner graph stays fully canonical. Public/shared derive a visible
+  // educational subset without ever importing private registry/index assets.
+  function readerGraph(base, education, approvedExtra) {
+    const nodes = [...base.nodes], edges = [...base.edges];
+    const known = new Set(nodes.map(n => n.key)), seenEdges = new Set(edges.map(e => e.s+'>'+e.rel+'>'+e.t));
+    const add = n => {if(known.has(n.key))return;known.add(n.key);nodes.push(n);};
+    const edge = (s,t) => {
+      const token=s+'>in-module>'+t;if(!known.has(s)||!known.has(t)||seenEdges.has(token))return;
+      seenEdges.add(token);edges.push({s,t,rel:'in-module',basis:'recorded',at:'education-outline.js'});
+    };
+    const clean = (s,max=600) => String(s||'').replace(/<[^>]*>/g,'').slice(0,max);
+    for (const m of education?.modules||[]) {
+      add({key:'module:'+m.id,type:'module',id:m.id,title:clean(m.title,120),summary:clean(m.summary),
+        track:'A',pub:'public',facets:{module:m.id},axes:{},src:[{path:'education-outline.js',at:'modules.'+m.id}],
+        link:'#tab=learn'});
+    }
+    for (const t of education?.topics||[]) {
+      const id='concept:'+t.id;
+      add({key:id,type:'concept',id:t.id,title:clean(t.title,180),summary:clean(t.explanation,1200),
+        example:clean(t.example,1200),related:clean(t.related,400),track:'A',pub:'public',facets:{module:t.module},axes:{},
+        src:[{path:'education-outline.js',at:'topics.'+t.id}],link:t.link});
+      edge(id,'module:'+t.module);
+    }
+    // The shared edition can add only reviewed educational lesson summaries.
+    for (const m of approvedExtra?.modules||[]) {
+      add({key:'module:'+m.id,type:'module',id:m.id,title:clean(m.title,180),summary:clean(m.summary),
+        track:'A',pub:'shared',facets:{module:m.id},axes:{},
+        src:[{path:'shared-education-graph.js',at:'modules.'+m.id}],link:'#tab=learn'});
+    }
+    for (const t of approvedExtra?.topics||[]) {
+      const id='concept:'+t.id;
+      add({key:id,type:'concept',id:t.id,title:clean(t.title,180),summary:clean(t.explanation,1200),
+        example:clean(t.example,1200),track:'A',pub:'shared',facets:{module:t.module},axes:{},
+        src:[{path:'shared-education-graph.js',at:'topics.'+t.id}],link:t.link});
+      edge(id,'module:'+t.module);
+    }
+    return {nodes,edges};
+  }
+
   /* ---- graph index and queries ------------------------------------------------------------------ */
   function index(graph) {
     const byKey = new Map(graph.nodes.map(n => [n.key, n]));
@@ -383,6 +423,6 @@
   }
 
   return { TYPES, GROUPS, RELATIONS, BASIS, SOURCE_DERIVED, AXES, FACETS, UNCLASSIFIED, FW_PATH, LEARN_PATH,
-    key, clip, uniq, hash32, frameworkGraph, index, neighbours, closure, dependencies, degree, conceptsNeeded,
+    key, clip, uniq, hash32, frameworkGraph, readerGraph, index, neighbours, closure, dependencies, degree, conceptsNeeded,
     clusterOf, layout, facetValues, match };
 });

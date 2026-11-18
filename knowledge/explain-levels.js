@@ -42,6 +42,17 @@ function get(nd){
   else if(c&&c.provisional){r.deeper=clip(c.provisional.plain,2600);r.deepSource='AI-generated — source verification pending';r.example=c.provisional.example||'';r.exampleAi=true;}
   const extra=secs.find(s=>/application|implication|limit|exercise|example/i.test(s.title));
   if(extra){r.expert=clip(extra.md,3000);r.expertSource='Existing study-note section: '+extra.title;}
+  if(!secs.length&&nd.example){
+    r.deeper=clip(nd.summary,1500);
+    r.deepSource='Approved introductory curriculum';
+    r.example=clip(nd.example,1500);
+    r.expert=nd.related?'Related subjects to explore: '+nd.related+'. Try explaining how they connect before studying deeper lessons.':
+      'Try explaining the idea in your own words, then test it using an example with different numbers.';
+    r.expertSource='Suggested learning exercise';
+  }else if(!secs.length&&nd.src?.[0]?.path==='shared-education-graph.js'){
+    r.deeper=clip(nd.summary,1500);r.deepSource='Approved shared educational summary';
+    r.expert='Read the extended study lesson for worked examples and exercises.';r.expertSource='Approved shared study outline';
+  }
  }else if(type==='component'){
   if(LN[id]){r.deeper=clip(LN[id],3100);r.deepSource='Existing educational project commentary';}
   if(DEP[id]){r.expert=clip(DEP[id].join('\n\n'),3100);r.expertSource='Existing framework detail';}
