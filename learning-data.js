@@ -205,6 +205,13 @@ window.FW_LEARNING = {
     D: ["Each transition changes the claim", "An idea is a reason to investigate. Registration freezes the proposed question; exploration supplies a lead; confirmation tests the frozen procedure; forward observations challenge it on newly arriving data. Paper trading evaluates execution with owner approval, and monitoring may lead to retirement or a new version. This view mixes built research capabilities with proposed and planned stages: use the status summaries below it: registration, confirmation and the forward record are proposed; exploration tools exist; paper is planned. Lifecycle shape/colour denotes a kind of state, not implementation maturity. No candidate has completed the path today.", ["hyp-registry", "discovery", "forward-record", "approval"]],
     E: ["Read this as an unresolved alternative", "This is Claude's existing structural proposal, not the adopted plan. It would separate eligibility from event detection and set active versions and capital shares at deployment, before targets reach the common policy and gate. The point is to illustrate possible answers to the scanner and selector gaps. Colours distinguish specification plans, R-001 proposals and additional suggestions; none makes an arrow operational. The owner has not accepted this topology as an implementation instruction.", ["scanner-gap", "select-gap", "policy-fn"]]
   },
+  openReferences: [
+    ["SEC Investor.gov — understanding stocks", "https://www.investor.gov/introduction-investing/investing-basics/investment-products/stocks"],
+    ["SEC EDGAR — public company disclosures", "https://www.sec.gov/edgar/search/"],
+    ["Kenneth French Data Library — research datasets", "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html"],
+    ["Federal Reserve FRED — economic data", "https://fred.stlouisfed.org/"],
+    ["Time-series cross-validation — scikit-learn", "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html"]
+  ],
   references: [
     ["PSR/DSR primary paper (Bailey & López de Prado)", "https://www.davidhbailey.com/dhbpapers/deflated-sharpe.pdf"],
     ["SPA official method reference", "https://bashtage.github.io/arch/multiple-comparison/generated/arch.bootstrap.SPA.html"],

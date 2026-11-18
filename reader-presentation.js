@@ -45,27 +45,18 @@ if(about){
  if(method){
    const next=method.nextElementSibling;
    if(next?.classList.contains('note'))next.textContent='These three links cover specific statistical methods documented in this project. They are not the complete bibliography.';
-   const more=el('section','reader-more-sources');
-   more.append(el('h3','','Open educational and data references'),
-     el('p','note','The following independent public resources explain market mechanics or provide primary data. They are separate from the project’s private implementation evidence.'));
-   const ul=el('ul');
-   const sources=[
-    ['SEC Investor.gov — what stocks are','https://www.investor.gov/introduction-investing/investing-basics/investment-products/stocks'],
-    ['SEC EDGAR — company reports and disclosures','https://www.sec.gov/edgar/search/'],
-    ['Kenneth French Data Library — research factors and portfolio data','https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html'],
-    ['Federal Reserve FRED — public economic data','https://fred.stlouisfed.org/']
-   ];
-   for(const [name,url] of sources){const li=el('li'),a=el('a','',name);a.href=url;a.target='_blank';a.rel='noopener noreferrer';li.append(a);ul.append(li);}
-   more.append(ul);about.append(more);
  }
 }
 const views=qs('#tab-views');
 if(views){const p=views.querySelector(':scope > .note');if(p)p.textContent='Choose a diagram to see how the Workbench’s parts relate to each other. Click the highlighted steps for explanations. For a larger view, open the diagram in its own tab.';}
 const css=el('style');css.textContent=
 '.reader-decision{max-width:1000px;margin:14px 0}.reader-decision h3{margin:0 0 10px;font-size:16px}.reader-decision p{line-height:1.75;font-size:13px}'+
-'.reader-private-reference{color:var(--muted);font-style:italic}.reader-more-sources{margin-top:25px;padding:20px;border:1px solid var(--line);border-radius:var(--radius)}'+
-'.reader-more-sources h3{font-size:16px}.reader-more-sources li{margin:8px 0}'+
+'.reader-private-reference{color:var(--muted);font-style:italic}'+
+
 'body:not([data-owner="true"]) #tab-overview .qa:last-child{display:none}'+
+'body:not([data-owner="true"]) #tab-overview>.dashboard-summary{display:none}'+
+'body:not([data-owner="true"]) #tab-about>.split>.card:nth-child(2){display:none}'+
+'body:not([data-owner="true"]) #tab-about>.split>.card:nth-child(4){display:none}'+ 
 'body:not([data-owner="true"]) .publication-notes{display:none}'+
 'body:not([data-owner="true"]) #tab-decisions .tag{display:none}';
 document.head.append(css);

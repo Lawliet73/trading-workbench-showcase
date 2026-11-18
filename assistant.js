@@ -22,7 +22,7 @@
   const note=el('p',{class:'ai-note'},'Ask about concepts, models and how they connect. Examples are illustrative; request sources when you need them.');
   panel.append(top,context,suggestions,messages,status,form,note);document.body.append(launcher,panel);
   let history=[],controller,previousFocus;let component='',diagram='',record='',graphRecord='';
-  function refresh(){const route=new URLSearchParams(location.hash.slice(1));diagram=route.get('tab')==='views'?(route.get('v')||'A'):'';component=route.get('c')||'';record=route.get('k')||graphRecord;const c=window.FW?.components.find(c=>c.id===component);const view=window.FW?.views.find(v=>v.id===diagram);const selected=window.FW_KNOWLEDGE?.nodes?.find(n=>n.key===record);context.replaceChildren(document.createTextNode(selected?'Discussing: '+selected.title:c?'Discussing: '+c.n:view?'Diagram: '+view.t:'Ask about models and components'));
+  function refresh(){const route=new URLSearchParams(location.hash.slice(1));diagram=route.get('tab')==='views'?(route.get('v')||'A'):'';component=route.get('c')||'';record=route.get('k')||(component?'':graphRecord);const c=window.FW?.components.find(c=>c.id===component);const view=window.FW?.views.find(v=>v.id===diagram);const selected=window.FW_KNOWLEDGE?.nodes?.find(n=>n.key===record);context.replaceChildren(document.createTextNode(selected?'Discussing: '+selected.title:c?'Discussing: '+c.n:view?'Diagram: '+view.t:'Ask about models and components'));
      const targetComponent=component||(record.startsWith('component:')?record.slice('component:'.length):'');
      if(targetComponent&&window.FW?.components.some(x=>x.id===targetComponent)){
        const link=el('a',{href:'#tab=components&c='+encodeURIComponent(targetComponent)},'View this component');
