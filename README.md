@@ -2,6 +2,8 @@
 
 **Live site:** https://lawliet73.github.io/trading-workbench-showcase/
 
+**Project owner:** Kalab Alemayehu ([GitHub: Lawliet73](https://github.com/Lawliet73)). The live GitHub Pages site is published from this repository under my account.
+
 Trading Workbench is a personal side project and an ongoing learning exercise. I use it to explore quantitative trading, systematic strategy research and software engineering. This repository holds a public snapshot of the project's interactive **framework map**. The code and research notes are in a separate private repository.
 
 Nothing here is investment advice. No strategy in this project has shown that it makes money.
